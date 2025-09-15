@@ -154,7 +154,7 @@
 #include <time.h>
 
 #define SWARM_GUI 1
-#define LUA_SDK 1
+//#define LUA_SDK 1
 
 #ifdef SWARM_GUI
 //#pragma message(FILE_LINE_STRING " !!FIXME!! replace all this with Sys_LoadGameModule")

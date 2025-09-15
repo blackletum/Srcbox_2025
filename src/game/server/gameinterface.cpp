@@ -141,7 +141,7 @@ extern ConVar tf_mm_servermode;
 #endif
 
 #define SWARM_INTERFACE_SERVER 1
-#define LUA_SDK 1
+//#define LUA_SDK 1
 
 #ifdef SWARM_INTERFACE_SERVER
 //#pragma message(FILE_LINE_STRING " !!FIXME!! replace all this with Sys_LoadGameModule")
@@ -1930,13 +1930,13 @@ void CServerGameDLL::PreSaveGameLoaded( char const *pSaveName, bool bInGame )
 bool CServerGameDLL::ShouldHideServer( void )
 {
 #if defined ( LUA_SDK )
-	/*if (g_bLuaInitialized)
+	if (g_bLuaInitialized)
 	{
 		BEGIN_LUA_CALL_HOOK("ShouldHideServer");
 		END_LUA_CALL_HOOK(0, 1);
 
 		RETURN_LUA_BOOLEAN();
-	}*/
+	}
 #endif
 
 	if ( g_pcv_commentary && g_pcv_commentary->GetBool() )
