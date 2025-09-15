@@ -54,6 +54,11 @@ $Project "height2normal"
 	"utils\height2normal\height2normal.vpc" [$WINDOWS]
 }
 
+$Project "hlmv"
+{
+	"utils\hlmv\hlmv.vpc" [$WINDOWS]
+}
+
 $Project "server"
 {
 	"game\server\server_tf.vpc"			[$TF]

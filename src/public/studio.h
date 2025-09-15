@@ -2337,6 +2337,9 @@ struct studiohdr_t
 #else
 	mutable void		*virtualModel;
 #endif
+	// For old HLMV
+	mutable void* virtualModel;
+
 	virtualmodel_t		*GetVirtualModel( void ) const;
 
 	// for demand loaded animation blocks
@@ -2366,6 +2369,9 @@ struct studiohdr_t
 	mutable void		*pVertexBase;
 	mutable void		*pIndexBase;
 #endif
+	// Required for the old HLMV compile. 
+	mutable void* pVertexBase;
+	mutable void* pIndexBase;
 
 	// if STUDIOHDR_FLAGS_CONSTANT_DIRECTIONAL_LIGHT_DOT is set,
 	// this value is used to calculate directional components of lighting 
