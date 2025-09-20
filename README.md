@@ -3,6 +3,7 @@
 **Open-sourced sandbox built using the lastest Source SDK 2013**
 
 A free mod ment to be an open-sourced version of garrys mod (10), with improvments
+Supports newer games like L4D(2), Alien Swarm, and Portal 2. CS:GO not supported, Dota 2 (Source 1) never.
 
 ### Proudly powered by
 
@@ -14,8 +15,6 @@ adnan.f.zafar AT gmail DOT com
 https://web.archive.org/web/20150222194420/http://skew.telefragged.com/mods/hl2/ARGG//  
 
 ARGG is used by Half-Life 2: Sandbox to implement rotational functionality for the physics manipulator.
-
-It has been ported to Srcbox, as it's close to GMOD's own physgun
 
 <img width="233" height="50" alt="hl2sb" src="https://github.com/user-attachments/assets/6dac8f06-0f7d-42b7-9571-401193f3895b" />
 
