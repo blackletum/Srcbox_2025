@@ -44,6 +44,8 @@ private:
 	static void AcceptQuitGameCallback();
 	void SetFooterState();
 	//ImagePanel* m_pLogo;
+	wchar_t GameTitle[ 2 ];
+	vgui::HFont m_hLogoFont;
 
 	enum MainMenuQuickJoinHelpText
 	{

@@ -290,13 +290,17 @@ void InGameMainMenu::OnKeyCodePressed( KeyCode code )
 }
 
 //=============================================================================
-void InGameMainMenu::ApplySchemeSettings( vgui::IScheme *pScheme )
+void InGameMainMenu::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
-	BaseClass::ApplySchemeSettings( pScheme );
+	BaseClass::ApplySchemeSettings(pScheme);
 
-	LoadControlSettings( "Resource/UI/BaseModUI/InGameMainMenu.res" );
-	
-	SetPaintBackgroundEnabled( true );
+	LoadControlSettings("Resource/UI/BaseModUI/InGameMainMenu.res");
+
+	if (CommandLine()->FindParm("-gamepadui")) {
+		SetPaintBackgroundEnabled(false);
+	} else {
+		SetPaintBackgroundEnabled(true);
+	}
 
 	SetFooterState();
 }

@@ -10,33 +10,37 @@
 #include "IGameConsole.h"
 #include "IVGuiModule.h"
 #include "IVGuiModuleLoader.h"
-
-//#include <windows.h> // For LoadLibrary
+#include "../game/gamepadui/igamepadui.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-IGameUI *g_pGameUI = NULL;
-
-// Add this near the top, after your includes
-//static CSysModule* m = nullptr;
-
-// Function to load the legacy DLL
-void LoadLegacyGameUIDLL()
-{
-	static CSysModule* m = Sys_LoadModule("GameUI_Legacy.dll");
-}
 
 static CreateInterfaceFn ClientFactory()
 {
-    // Ensure legacy DLL is loaded for its exports
-    LoadLegacyGameUIDLL();
+    if (CommandLine()->FindParm("-gamepadui"))
+    {
+        static CSysModule* n = Sys_LoadModule("gamepadui");
+        if (!n)
+        {
+            // If we don't load the client last, the game will outright crash.
+            // This is because the client has our new interface, and not passing
+            // an interface will outright crash the game because no gameui_interface_version is found.
+            n = Sys_LoadModule("gamepadui");
+            n = Sys_LoadModule("client", SYS_NOLOAD);
+        }
 
-	static CSysModule* m = Sys_LoadModule("client", SYS_NOLOAD);
-	static CSysModule* n = Sys_LoadModule("GameUI_Legacy");
-	static CreateInterfaceFn fn = Sys_GetFactory(m);
-	static CreateInterfaceFn fm = Sys_GetFactory(n);
-	return fn;
+        static CreateInterfaceFn fm = Sys_GetFactory(n);
+        return fm;
+    }
+    else
+    {
+        // Fallback to the clients version of the interface from Alien Swarm.
+        // This is dubbed old gamepadui
+        static CSysModule* m = Sys_LoadModule("client", SYS_NOLOAD);
+        static CreateInterfaceFn fn = Sys_GetFactory(m);
+        return fn;
+    }
 }
 
 #define INTERFACE_REDIRECT_TO_CLIENT(inter) \

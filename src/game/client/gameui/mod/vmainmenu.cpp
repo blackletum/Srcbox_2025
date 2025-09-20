@@ -28,6 +28,7 @@
 #include "vgui/ISurface.h"
 #include "tier0/icommandline.h"
 #include "fmtstr.h"
+#include "filesystem.h"
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -43,8 +44,8 @@ static ConVar ui_old_options_menu( "ui_old_options_menu", "0", FCVAR_HIDDEN, "Br
 void OpenGammaDialog( VPANEL parent );
 
 //=============================================================================
-MainMenu::MainMenu( Panel *parent, const char *panelName ):
-	BaseClass( parent, panelName, true, false, false, false )
+MainMenu::MainMenu(Panel* parent, const char* panelName) :
+	BaseClass(parent, panelName, true, false, false, false)
 {
 	SetProportional( true );
 	SetTitle( "", false );
@@ -101,10 +102,6 @@ void MainMenu::OnCommand( const char *command )
 			m_ActiveControl->NavigateFrom( );
 		}
 		CBaseModPanel::GetSingleton().OpenWindow(WT_AUDIOVIDEO, this, true );
-	}
-	else if (!Q_strcmp(command, "Srcbox_Singleplayer_Menu"))
-	{
-		engine->ClientCmd("srcbox_singleplayer");
 	}
 	else if (!Q_strcmp(command, "Srcbox_Singleplayer_Menu"))
 	{
@@ -405,14 +402,16 @@ void MainMenu::ApplySchemeSettings(IScheme* pScheme)
 
 	const char* pSettings = "Resource/UI/BaseModUI/MainMenu.res";
 
-	LoadControlSettings(pSettings);
+	if (CommandLine()->FindParm("-gamepadui")) {
+		return;
+	}
+	else {
+		LoadControlSettings(pSettings);
+	}
 
-	vgui::ImagePanel* pGameLogo = new vgui::ImagePanel(this, "Logo");
-	pGameLogo->SetImage("../logo/spherical_sourceballs");
-	pGameLogo->SetPos(170, 300);
-	pGameLogo->SetSize(512, 128);
-	pGameLogo->SetShouldScaleImage(1);	
-	pGameLogo->SetScaleAmount(0.85);
+	int nParentW, nParentH;
+	GetParent()->GetSize(nParentW, nParentH);
+	SetBounds(0, 0, nParentW, nParentH);
 
 	BaseModHybridButton *button = dynamic_cast< BaseModHybridButton* >( FindChildByName( "BtnPlaySolo" ) );
 	if (button)
