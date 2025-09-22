@@ -1779,7 +1779,7 @@ bool CHL2MP_Player::IsThreatFiringAtMe( CBaseEntity* threat ) const
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
 // -------------------------------------------------------------------------------- //
 
-class CTEPlayerAnimEvent : public CBaseTempEntity
+/*class CTEPlayerAnimEvent : public CBaseTempEntity
 {
 public:
 	DECLARE_CLASS(CTEPlayerAnimEvent, CBaseTempEntity);
@@ -1893,3 +1893,4 @@ void CHL2MP_Player::SetupBones(matrix3x4_t* pBoneToWorld, int boneMask)
 		boneMask
 	);
 }
+*/
