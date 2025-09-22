@@ -20,9 +20,6 @@
 #include "grenade_satchel.h"
 #include "eventqueue.h"
 #include "gamestats.h"
-#include "tier0/vprof.h"
-#include "bone_setup.h"
-#include "datacache\imdlcache.h"
 #include "ammodef.h"
 #include "NextBot.h"
 
@@ -39,6 +36,7 @@ CBaseEntity	 *g_pLastRebelSpawn = NULL;
 extern CBaseEntity				*g_pLastSpawn;
 
 ConVar hl2mp_spawn_frag_fallback_radius( "hl2mp_spawn_frag_fallback_radius", "48", FCVAR_NONE, "If no spawns are available, kill players with this radius to allow new players to spawn." );
+static ConVar srcbox_flashlight_version("srcbox_flashlight_version", "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Select which flashlight from a version of Source (or Goldsource) to use. 1 is Half-Life's (Goldsource), 2 is Half-Life 2: Episode 2, and 3 is Left 4 Dead (2). Default is 0");
 
 #define HL2MP_COMMAND_MAX_RATE 0.3
 
@@ -143,8 +141,7 @@ const char *g_ppszRandomCombineModels[] =
 
 #pragma warning( disable : 4355 )
 
-//CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
-CHL2MP_Player::CHL2MP_Player()
+CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 {
 	m_angEyeAngles.Init();
 
@@ -182,6 +179,13 @@ void CHL2MP_Player::UpdateOnRemove( void )
 void CHL2MP_Player::Precache( void )
 {
 	BaseClass::Precache();
+
+	PrecacheScriptSound("HL1Player.FlashLightOn");
+	PrecacheScriptSound("HL1Player.FlashLightOff");
+	PrecacheScriptSound("HL2Player.FlashLightOn");
+	PrecacheScriptSound("HL2Player.FlashLightOff");
+	PrecacheScriptSound("Player.FlashlightOn");
+	PrecacheScriptSound("Player.FlashlightOff");
 
 	PrecacheModel ( "sprites/glow01.vmt" );
 
@@ -240,6 +244,7 @@ void CHL2MP_Player::GiveAllItems( void )
 	GiveNamedItem( "weapon_slam" );
 
 	GiveNamedItem( "weapon_physcannon" );
+	GiveNamedItem( "weapon_physgun");
 	
 }
 
@@ -247,22 +252,11 @@ void CHL2MP_Player::GiveDefaultItems( void )
 {
 	EquipSuit();
 
-	/*CBasePlayer::GiveAmmo(255, "Pistol");
+	CBasePlayer::GiveAmmo( 255,	"Pistol");
 	CBasePlayer::GiveAmmo( 45,	"SMG1");
 	CBasePlayer::GiveAmmo( 1,	"grenade" );
 	CBasePlayer::GiveAmmo( 6,	"Buckshot");
-	CBasePlayer::GiveAmmo( 6,	"357" );*/
-
-	CBasePlayer::GiveAmmo(255, "Pistol");
-	CBasePlayer::GiveAmmo(255, "AR2");
-	CBasePlayer::GiveAmmo(5, "AR2AltFire");
-	CBasePlayer::GiveAmmo(255, "SMG1");
-	CBasePlayer::GiveAmmo(255, "Buckshot");
-	CBasePlayer::GiveAmmo(3, "smg1_grenade");
-	CBasePlayer::GiveAmmo(3, "rpg_round");
-	CBasePlayer::GiveAmmo(5, "grenade");
-	CBasePlayer::GiveAmmo(32, "357");
-	CBasePlayer::GiveAmmo(16, "XBowBolt");
+	CBasePlayer::GiveAmmo( 6,	"357" );
 
 	if ( GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER )
 	{
@@ -273,23 +267,11 @@ void CHL2MP_Player::GiveDefaultItems( void )
 		GiveNamedItem( "weapon_crowbar" );
 	}
 	
-	/*GiveNamedItem("weapon_pistol");
+	GiveNamedItem( "weapon_pistol" );
 	GiveNamedItem( "weapon_smg1" );
 	GiveNamedItem( "weapon_frag" );
-	GiveNamedItem( "weapon_physcannon" );*/
-
-	GiveNamedItem("weapon_smg1");
-	GiveNamedItem("weapon_frag");
-	GiveNamedItem("weapon_crowbar");
-	GiveNamedItem("weapon_pistol");
-	GiveNamedItem("weapon_ar2");
-	GiveNamedItem("weapon_shotgun");
-	GiveNamedItem("weapon_physcannon");
-	GiveNamedItem("weapon_physgun");
-	//GiveNamedItem("weapon_bugbait");
-	GiveNamedItem("weapon_rpg");
-	GiveNamedItem("weapon_357");
-	GiveNamedItem("weapon_crossbow");
+	GiveNamedItem( "weapon_physcannon" );
+	GiveNamedItem( "weapon_physgun");
 
 	const char *szDefaultWeaponName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_defaultweapon" );
 
@@ -301,7 +283,7 @@ void CHL2MP_Player::GiveDefaultItems( void )
 	}
 	else
 	{
-		Weapon_Switch( Weapon_OwnsThisType( "weapon_physcannon" ) );
+		Weapon_Switch( Weapon_OwnsThisType( "weapon_physgun" ) );
 	}
 }
 
@@ -360,6 +342,8 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::Spawn(void)
 {
+	RemoveFlag(FL_FROZEN);
+
 	m_flNextModelChangeTime = 0.0f;
 	m_flNextTeamChangeTime = 0.0f;
 
@@ -647,7 +631,7 @@ void CHL2MP_Player::PostThink( void )
 		SetCollisionBounds( VEC_CROUCH_TRACE_MIN, VEC_CROUCH_TRACE_MAX );
 	}
 
-	//m_PlayerAnimState.Update();
+	m_PlayerAnimState.Update();
 
 	// Store the eye angles pitch so the client can compute its animation state correctly.
 	m_angEyeAngles = EyeAngles();
@@ -928,6 +912,7 @@ void CHL2MP_Player::SetAnimation( PLAYER_ANIM playerAnim )
 	ResetSequence( animDesired );
 	SetCycle( 0 );
 }
+
 
 extern int	gEvilImpulse101;
 //-----------------------------------------------------------------------------
@@ -1255,10 +1240,26 @@ extern ConVar flashlight;
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::FlashlightTurnOn( void )
 {
+	int flashlight_version = srcbox_flashlight_version.GetInt();
+
 	if( flashlight.GetInt() > 0 && IsAlive() )
 	{
 		AddEffects( EF_DIMLIGHT );
-		EmitSound( "HL2Player.FlashlightOn" );
+		switch (flashlight_version)
+		{
+		case 1:
+			EmitSound("HL1Player.FlashLightOn");
+			break;
+		case 2:
+			EmitSound("HL2Player.FlashLightOn");
+			break;
+		case 3:
+			EmitSound("Player.FlashlightOn");
+			break;
+		default:
+			EmitSound("HL2Player.FlashLightOn");
+			break;
+		}
 	}
 }
 
@@ -1268,10 +1269,26 @@ void CHL2MP_Player::FlashlightTurnOn( void )
 void CHL2MP_Player::FlashlightTurnOff( void )
 {
 	RemoveEffects( EF_DIMLIGHT );
+
+	int flashlight_version = srcbox_flashlight_version.GetInt();
 	
 	if( IsAlive() )
 	{
-		EmitSound( "HL2Player.FlashlightOff" );
+		switch (flashlight_version)
+		{
+		case 1:
+			EmitSound("HL1Player.FlashLightOff");
+			break;
+		case 2:
+			EmitSound("HL2Player.FlashLightOff");
+			break;
+		case 3:
+			EmitSound("Player.FlashlightOff");
+			break;
+		default:
+			EmitSound("HL2Player.FlashLightOff");
+			break;
+		}
 	}
 }
 
@@ -1771,125 +1788,4 @@ bool CHL2MP_Player::IsThreatFiringAtMe( CBaseEntity* threat ) const
 	}
 
 	return false;
-}
-
-// The below is from SDK 2006 EP1
-
-// -------------------------------------------------------------------------------- //
-// Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
-// -------------------------------------------------------------------------------- //
-
-class CTEPlayerAnimEvent : public CBaseTempEntity
-{
-public:
-	DECLARE_CLASS(CTEPlayerAnimEvent, CBaseTempEntity);
-	DECLARE_SERVERCLASS();
-
-	CTEPlayerAnimEvent(const char* name) : CBaseTempEntity(name)
-	{
-	}
-
-	CNetworkHandle(CBasePlayer, m_hPlayer);
-	CNetworkVar(int, m_iEvent);
-	CNetworkVar(int, m_nData);
-};
-
-IMPLEMENT_SERVERCLASS_ST_NOBASE(CTEPlayerAnimEvent, DT_TEPlayerAnimEvent)
-SendPropEHandle(SENDINFO(m_hPlayer)),
-SendPropInt(SENDINFO(m_iEvent), Q_log2(PLAYERANIMEVENT_COUNT) + 1, SPROP_UNSIGNED),
-SendPropInt(SENDINFO(m_nData), 32)
-END_SEND_TABLE()
-
-static CTEPlayerAnimEvent g_TEPlayerAnimEvent("PlayerAnimEvent");
-
-void TE_PlayerAnimEvent(CBasePlayer* pPlayer, PlayerAnimEvent_t event, int nData)
-{
-	CPVSFilter filter((const Vector&)pPlayer->EyePosition());
-
-	//Tony; use prediction rules.
-	filter.UsePredictionRules();
-
-	g_TEPlayerAnimEvent.m_hPlayer = pPlayer;
-	g_TEPlayerAnimEvent.m_iEvent = event;
-	g_TEPlayerAnimEvent.m_nData = nData;
-	g_TEPlayerAnimEvent.Create(filter, 0);
-}
-
-
-void CHL2MP_Player::DoAnimationEvent(PlayerAnimEvent_t event, int nData)
-{
-	m_PlayerAnimState->DoAnimationEvent(event, nData);
-	TE_PlayerAnimEvent(this, event, nData);	// Send to any clients who can see this guy.
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Override setup bones so that is uses the render angles from
-//			the HL2MP animation state to setup the hitboxes.
-//-----------------------------------------------------------------------------
-void CHL2MP_Player::SetupBones(matrix3x4_t* pBoneToWorld, int boneMask)
-{
-	VPROF_BUDGET("CHL2MP_Player::SetupBones", VPROF_BUDGETGROUP_SERVER_ANIM);
-
-	// Set the mdl cache semaphore.
-	MDLCACHE_CRITICAL_SECTION();
-
-	// Get the studio header.
-	Assert(GetModelPtr());
-	CStudioHdr* pStudioHdr = GetModelPtr();
-
-	Vector pos[MAXSTUDIOBONES];
-	Quaternion q[MAXSTUDIOBONES];
-
-	// Adjust hit boxes based on IK driven offset.
-	Vector adjOrigin = GetAbsOrigin() + Vector(0, 0, m_flEstIkOffset);
-
-	// FIXME: pass this into Studio_BuildMatrices to skip transforms
-	CBoneBitList boneComputed;
-	if (m_pIk)
-	{
-		m_iIKCounter++;
-		m_pIk->Init(pStudioHdr, GetAbsAngles(), adjOrigin, gpGlobals->curtime, m_iIKCounter, boneMask);
-		GetSkeleton(pStudioHdr, pos, q, boneMask);
-
-		m_pIk->UpdateTargets(pos, q, pBoneToWorld, boneComputed);
-		CalculateIKLocks(gpGlobals->curtime);
-		m_pIk->SolveDependencies(pos, q, pBoneToWorld, boneComputed);
-	}
-	else
-	{
-		GetSkeleton(pStudioHdr, pos, q, boneMask);
-	}
-
-	CBaseAnimating* pParent = dynamic_cast<CBaseAnimating*>(GetMoveParent());
-	if (pParent)
-	{
-		// We're doing bone merging, so do special stuff here.
-		CBoneCache* pParentCache = pParent->GetBoneCache();
-		if (pParentCache)
-		{
-			BuildMatricesWithBoneMerge(
-				pStudioHdr,
-				m_PlayerAnimState->GetRenderAngles(),
-				adjOrigin,
-				pos,
-				q,
-				pBoneToWorld,
-				pParent,
-				pParentCache);
-
-			return;
-		}
-	}
-
-	Studio_BuildMatrices(
-		pStudioHdr,
-		m_PlayerAnimState->GetRenderAngles(),
-		adjOrigin,
-		pos,
-		q,
-		-1,
-		1.0f,          // flScale (use 1.0f for no scaling, matches old behavior)
-		pBoneToWorld,
-		boneMask
-	);
 }
