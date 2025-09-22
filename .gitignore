@@ -523,3 +523,9 @@ game/mod_hl2mp/maps/graphs/peck.ain
 game/mod_hl2mp/materials/vgui/logos/ui/spray_bullseye.vmt
 game/mod_hl2mp_win64.exe
 game/mod_hl2mp/demoheader.tmp
+game/mod_hl2mp/cfg/config.cfg
+/game/mod_hl2mp/downloadlists
+game/mod_hl2mp/sound/sound.cache
+*.cache
+/game/mod_hl2mp/maps/graphs
+/src/gameui_stub/Releasemod_hl2mp
