@@ -141,6 +141,8 @@ extern ConVar tf_mm_servermode;
 #endif
 
 #define SWARM_INTERFACE_SERVER 1
+
+// Why is this defined here??? use VPC to define this! - Vvis :3 
 //#define LUA_SDK 1
 
 #ifdef SWARM_INTERFACE_SERVER
@@ -995,7 +997,7 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 	}
 #endif // USES_ECON_ITEMS
 
-//#ifdef LUA_SDK
+#ifdef LUA_SDK
 	lcf_recursivedeletefile(LUA_PATH_CACHE);
 
 	// Add Lua environment
@@ -1021,7 +1023,7 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 		// load LCF into stringtable
 		lcf_preparecachefile();
 	}
-//#endif
+#endif
 
 	ResetWindspeed();
 	UpdateChapterRestrictions( pMapName );

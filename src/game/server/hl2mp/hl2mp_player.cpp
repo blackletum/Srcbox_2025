@@ -1789,3 +1789,125 @@ bool CHL2MP_Player::IsThreatFiringAtMe( CBaseEntity* threat ) const
 
 	return false;
 }
+
+// The below is from SDK 2006 EP1
+
+// -------------------------------------------------------------------------------- //
+// Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
+// -------------------------------------------------------------------------------- //
+
+/*class CTEPlayerAnimEvent : public CBaseTempEntity
+{
+public:
+	DECLARE_CLASS(CTEPlayerAnimEvent, CBaseTempEntity);
+	DECLARE_SERVERCLASS();
+
+	CTEPlayerAnimEvent(const char* name) : CBaseTempEntity(name)
+	{
+	}
+
+	CNetworkHandle(CBasePlayer, m_hPlayer);
+	CNetworkVar(int, m_iEvent);
+	CNetworkVar(int, m_nData);
+};
+
+IMPLEMENT_SERVERCLASS_ST_NOBASE(CTEPlayerAnimEvent, DT_TEPlayerAnimEvent)
+SendPropEHandle(SENDINFO(m_hPlayer)),
+SendPropInt(SENDINFO(m_iEvent), Q_log2(PLAYERANIMEVENT_COUNT) + 1, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_nData), 32)
+END_SEND_TABLE()
+
+static CTEPlayerAnimEvent g_TEPlayerAnimEvent("PlayerAnimEvent");
+
+void TE_PlayerAnimEvent(CBasePlayer* pPlayer, PlayerAnimEvent_t event, int nData)
+{
+	CPVSFilter filter((const Vector&)pPlayer->EyePosition());
+
+	//Tony; use prediction rules.
+	filter.UsePredictionRules();
+
+	g_TEPlayerAnimEvent.m_hPlayer = pPlayer;
+	g_TEPlayerAnimEvent.m_iEvent = event;
+	g_TEPlayerAnimEvent.m_nData = nData;
+	g_TEPlayerAnimEvent.Create(filter, 0);
+}
+
+
+void CHL2MP_Player::DoAnimationEvent(PlayerAnimEvent_t event, int nData)
+{
+	m_PlayerAnimState->DoAnimationEvent(event, nData);
+	TE_PlayerAnimEvent(this, event, nData);	// Send to any clients who can see this guy.
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Override setup bones so that is uses the render angles from
+//			the HL2MP animation state to setup the hitboxes.
+//-----------------------------------------------------------------------------
+void CHL2MP_Player::SetupBones(matrix3x4_t* pBoneToWorld, int boneMask)
+{
+	VPROF_BUDGET("CHL2MP_Player::SetupBones", VPROF_BUDGETGROUP_SERVER_ANIM);
+
+	// Set the mdl cache semaphore.
+	MDLCACHE_CRITICAL_SECTION();
+
+	// Get the studio header.
+	Assert(GetModelPtr());
+	CStudioHdr* pStudioHdr = GetModelPtr();
+
+	Vector pos[MAXSTUDIOBONES];
+	Quaternion q[MAXSTUDIOBONES];
+
+	// Adjust hit boxes based on IK driven offset.
+	Vector adjOrigin = GetAbsOrigin() + Vector(0, 0, m_flEstIkOffset);
+
+	// FIXME: pass this into Studio_BuildMatrices to skip transforms
+	CBoneBitList boneComputed;
+	if (m_pIk)
+	{
+		m_iIKCounter++;
+		m_pIk->Init(pStudioHdr, GetAbsAngles(), adjOrigin, gpGlobals->curtime, m_iIKCounter, boneMask);
+		GetSkeleton(pStudioHdr, pos, q, boneMask);
+
+		m_pIk->UpdateTargets(pos, q, pBoneToWorld, boneComputed);
+		CalculateIKLocks(gpGlobals->curtime);
+		m_pIk->SolveDependencies(pos, q, pBoneToWorld, boneComputed);
+	}
+	else
+	{
+		GetSkeleton(pStudioHdr, pos, q, boneMask);
+	}
+
+	CBaseAnimating* pParent = dynamic_cast<CBaseAnimating*>(GetMoveParent());
+	if (pParent)
+	{
+		// We're doing bone merging, so do special stuff here.
+		CBoneCache* pParentCache = pParent->GetBoneCache();
+		if (pParentCache)
+		{
+			BuildMatricesWithBoneMerge(
+				pStudioHdr,
+				m_PlayerAnimState->GetRenderAngles(),
+				adjOrigin,
+				pos,
+				q,
+				pBoneToWorld,
+				pParent,
+				pParentCache);
+
+			return;
+		}
+	}
+
+	Studio_BuildMatrices(
+		pStudioHdr,
+		m_PlayerAnimState->GetRenderAngles(),
+		adjOrigin,
+		pos,
+		q,
+		-1,
+		1.0f,          // flScale (use 1.0f for no scaling, matches old behavior)
+		pBoneToWorld,
+		boneMask
+	);
+}
+*/

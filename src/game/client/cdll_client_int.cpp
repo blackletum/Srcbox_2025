@@ -154,6 +154,9 @@
 #include <time.h>
 
 #define SWARM_GUI 1
+
+
+// Why is this defined here???? Use VPC to define this!!!
 //#define LUA_SDK 1
 
 #include "GameUI/IGameUI.h"
