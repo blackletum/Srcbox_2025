@@ -24,6 +24,10 @@ $Project "Server (HL2MP)"
 {
 	$Folder	"Source Files"
 	{
+		$Folder "terror"
+		{
+			$File	"terror/prop_car_alarm.cpp"
+		}
 		$File	"ai_relationship.cpp"
 		$File	"basegrenade_concussion.cpp"
 		$File	"basegrenade_contact.cpp"
