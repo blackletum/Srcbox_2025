@@ -1,0 +1,16 @@
+"gamedepotsystem"
+{
+	"cstrike"		"1"
+	"tf"		"1"
+	"dod"		"0"
+	"ep2"		"0"
+	"episodic"		"0"
+	"lostcoast"		"0"
+	"hl1"		"1"
+	"hl2"		"0"
+	"portal"		"1"
+	"left4dead2"		"1"
+	"left4dead"		"0"
+	"portal2"		"0"
+	"csgo"		"0"
+}

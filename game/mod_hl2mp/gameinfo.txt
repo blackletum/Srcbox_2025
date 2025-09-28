@@ -7,17 +7,8 @@
 	nomodels 0
 	nohimodel 1
 	nocrosshair 1
-	extracontent 1
 	supportsvr	0
 	gamelogo	0
-	
-	// Game Mounting bools
-	// TODO: move this ingame like later gmod!
-	
-	l4dcontent 1
-	l4d2content 1
-	tf2content 1
-	//portalcontent 1
 	
 	hidden_maps
 	{
