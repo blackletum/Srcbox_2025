@@ -496,13 +496,6 @@ void CFlashlightEffect::UpdateLightOld(const Vector &vecPos, const Vector &vecDi
 	LightOffNew();
 }
 
-int CFlashlightEffect::LookupAttachment(const char* pAttachmentName)
-{
-	// skip over the special basecombatweapon lookup that always uses the world model instead of the current model
-	//return BaseClass::BaseClass::LookupAttachment(pAttachmentName);
-	return 0;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Do the headlight
 //-----------------------------------------------------------------------------
