@@ -203,6 +203,10 @@ DLL_IMPORT HANDLE STDCALL GetCurrentProcess(void);
 #include "../gamepadui/igamepadui.h"
 #endif // GAMEPADUI
 
+#ifdef SHADERCONSTHACK
+#include "materialsystem/shaderapihack.h"
+#endif // PS30 Shader Constant Hack
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -303,6 +307,22 @@ void ProcessCacheUsedMaterials()
         materials->CacheUsedMaterials();
 	}
 }
+
+#ifdef SHADERCONSTHACK
+//-----------------------------------------------------------------------------
+// Purpose: Override Constant Register Amount. So that we can use more of them
+//-----------------------------------------------------------------------------
+void ApplyShaderConstantHack()
+{
+	CMaterialConfigWrapper Wrapper;
+
+	Wrapper.PrintPixelConstants();
+	Wrapper.SetNumPixelConstants(224); // 224 is the max according to microsoft documentation
+	Wrapper.SetNumBooleanPixelConstants(16); // 16 is the max according to microsoft documentation
+	Wrapper.SetNumIntegerPixelConstants(16); // 16 is the max according to microsoft documentation
+	Wrapper.PrintPixelConstants();
+}
+#endif
 
 // String tables
 INetworkStringTable *g_pStringTableParticleEffectNames = NULL;
@@ -1174,6 +1194,11 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	IGameSystem::Add( PerfVisualBenchmark() );
 	IGameSystem::Add( MumbleSystem() );
 	IGameSystem::Add( SteamShareSystem() );
+
+#ifdef SHADERCONSTHACK
+	if (g_pMaterialSystemHardwareConfig->SupportsShaderModel_3_0())
+		ApplyShaderConstantHack();
+#endif
 
 	#if defined( TF_CLIENT_DLL )
 	IGameSystem::Add( CustomTextureToolCacheGameSystem() );
