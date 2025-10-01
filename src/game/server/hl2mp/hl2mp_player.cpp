@@ -141,7 +141,7 @@ const char *g_ppszRandomCombineModels[] =
 
 #pragma warning( disable : 4355 )
 
-CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
+CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState()
 {
 	m_angEyeAngles.Init();
 
@@ -631,7 +631,7 @@ void CHL2MP_Player::PostThink( void )
 		SetCollisionBounds( VEC_CROUCH_TRACE_MIN, VEC_CROUCH_TRACE_MAX );
 	}
 
-	m_PlayerAnimState.Update();
+	//m_PlayerAnimState.Update();
 
 	// Store the eye angles pitch so the client can compute its animation state correctly.
 	m_angEyeAngles = EyeAngles();
