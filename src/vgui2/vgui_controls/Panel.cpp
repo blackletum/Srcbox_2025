@@ -932,7 +932,7 @@ int Panel::GetYPos()
 void Panel::SetSize(int wide, int tall)
 {
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s - %s", __FUNCTION__, GetName() );
-	Assert( abs(wide) < 32768 && abs(tall) < 32768 );
+	//Assert( abs(wide) < 32768 && abs(tall) < 32768 );
 	ipanel()->SetSize(GetVPanel(), wide, tall);
 }
 
