@@ -285,15 +285,25 @@ bool CHL2GameMovement::ContinueForcedMove()
 	return lm->m_bForceLadderMove;
 }
 
+// MY CODE Old Ladder
 //-----------------------------------------------------------------------------
 // Purpose: Returns true if the player is on a ladder
 // Input  : &trace - ignored
 //-----------------------------------------------------------------------------
-bool CHL2GameMovement::OnLadder( trace_t &trace )
+bool CHL2GameMovement::OnLadder(trace_t& trace)
+//{
+//	return ( GetLadder() != NULL ) ? true : false;
+//}
 {
-	return ( GetLadder() != NULL ) ? true : false;
+#if defined(HL2_DLL) || defined( HL2MP )
+	if (GetLadder() == nullptr)
+		return BaseClass::OnLadder(trace);
+	else
+		return true;
+#else
+	return (GetLadder() != NULL) ? true : false;
+#endif
 }
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : ladders - 
@@ -565,12 +575,23 @@ void CHL2GameMovement::ReduceTimers( void )
 //-----------------------------------------------------------------------------
 void CHL2GameMovement::FullLadderMove()
 {
-	CFuncLadder *ladder = GetLadder();
-	Assert( ladder );
-	if ( !ladder )
+	// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined( HL2MP )
+	if (GetLadder() == nullptr)
+	{
+		BaseClass::FullLadderMove();
+		return;
+	}
+#endif
+	////////////////////////
+#if !defined( CLIENT_DLL )
+	CFuncLadder* ladder = GetLadder();
+	Assert(ladder);
+	if (!ladder)
 	{
 		return;
 	}
+
 
 	CheckWater();
 
@@ -743,6 +764,7 @@ void CHL2GameMovement::FullLadderMove()
 			mv->SetAbsOrigin( oldOrigin );
 		}
 	}
+#endif
 }
 
 bool CHL2GameMovement::CheckLadderAutoMountEndPoint( CFuncLadder *ladder, const Vector& bestOrigin )
@@ -935,10 +957,17 @@ float CHL2GameMovement::MaxSpeed()
 bool CHL2GameMovement::LadderMove( void )
 {
 
-	if ( player->GetMoveType() == MOVETYPE_NOCLIP )
+	if (player->GetMoveType() == MOVETYPE_NOCLIP)
 	{
-		SetLadder( NULL );
+		SetLadder(NULL);
+		//return false;
+		// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined ( HL2MP )
+		return BaseClass::LadderMove();
+#else
 		return false;
+#endif
+		/////////////////
 	}
 
 	// If being forced to mount/dismount continue to act like we are on the ladder
@@ -1005,7 +1034,14 @@ bool CHL2GameMovement::LadderMove( void )
 			}
 		}
 
+		//return false;
+		// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined ( HL2MP )
+		return BaseClass::LadderMove();
+#else
 		return false;
+#endif
+		////////////////
 	}
 
 	if ( !ladder && 
@@ -1017,9 +1053,16 @@ bool CHL2GameMovement::LadderMove( void )
 
 	// Reassign the ladder
 	ladder = GetLadder();
-	if ( !ladder )
+	if (!ladder)
 	{
+		//return false;
+		// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined ( HL2MP )
+		return BaseClass::LadderMove();
+#else
 		return false;
+#endif
+		////////////////
 	}
 
 	// Don't play the deny sound
@@ -1083,7 +1126,14 @@ bool CHL2GameMovement::LadderMove( void )
 		{
 			mv->m_vecVelocity.z = mv->m_vecVelocity.z + 50;
 		}
+		//return false;
+		// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined ( HL2MP )
+		return BaseClass::LadderMove();
+#else
 		return false;
+#endif
+		////////////////
 	}
 
 	if ( forwardSpeed != 0 || rightSpeed != 0 )
@@ -1109,13 +1159,20 @@ bool CHL2GameMovement::LadderMove( void )
 		// Check to see if we've mounted the ladder in a bogus spot and, if so, just fall off the ladder...
 		float dummyt = 0.0f;
 		float distFromLadderSqr = CalcDistanceSqrToLine( mv->GetAbsOrigin(), topPosition, bottomPosition, &dummyt );
-		if ( distFromLadderSqr > 36.0f )
+		if (distFromLadderSqr > 36.0f)
 		{
 			// Uh oh, we fell off zee ladder...
-			player->SetMoveType( MOVETYPE_WALK );
+			player->SetMoveType(MOVETYPE_WALK);
 			// Remove from ladder
-			SetLadder( NULL );
+			SetLadder(NULL);
+			//return false;
+			// MY CODE Old Ladder
+#if defined(HL2_DLL) || defined ( HL2MP )
+			return BaseClass::LadderMove();
+#else
 			return false;
+#endif
+			///////////////
 		}
 
 		bool ishorizontal = fabs( topPosition.z - bottomPosition.z ) < 64.0f ? true : false;
