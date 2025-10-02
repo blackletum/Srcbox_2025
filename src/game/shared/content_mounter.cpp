@@ -14,11 +14,10 @@
 #include <vgui/ILocalize.h>
 #include "icommandline.h"
 #include "tier3/tier3.h"
-
 void AddHL1(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/hl1/hl1_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/hl1", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl1", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/hl1_%language%.txt");
 }
 
@@ -35,14 +34,14 @@ void AddHL2(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/episodic/ep1_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/episodic", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/ep2/ep2_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/ep2", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/ep2", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/hl2_%language%.txt");
 }
 
 void AddCSS(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/cstrike", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/cstrike", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/cstrike_%language%.txt");
 }
 
@@ -50,14 +49,14 @@ void AddHL2MP(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/hl2mp/hl2mp_pak.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/hl2mp/hl2mp_english.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/hl2mp", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2mp", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/hl2mp_%language%.txt");
 }
 
 void AddLostCoast(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/lostcoast/lostcoast_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/lostcoast", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/lostcoast", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/lostcoast_%language%.txt");
 }
 
@@ -66,15 +65,15 @@ void AddTF2(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/tf", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures_dir.vpk", path), "GAME", PATH_ADD_TO_TAIL);
+	filesystem->AddSearchPath(CFmtStr("%s/tf", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/tf_%language%.txt");
 }
 
 void AddPortal(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/portal/portal_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/portal", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/portal", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/portal_%language%.txt");
 }
 
@@ -82,7 +81,7 @@ void AddL4D(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/left4dead/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/left4dead", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/left4dead_dlc3/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/left4dead_dlc3/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/left4dead_%language%.txt");
 }
 
@@ -95,7 +94,7 @@ void AddL4D2(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/left4dead2_dlc2/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/left4dead2_dlc2", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/left4dead2_dlc3/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/left4dead2_dlc3", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/left4dead2_dlc3", path), "GAME", PATH_ADD_TO_TAIL);
 }
 
 void AddPortal2(const char* path)
@@ -106,6 +105,7 @@ void AddPortal2(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/portal2_dlc1", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/portal2_dlc2/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/portal2_dlc2", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/portal2_dlc2", path), "GAME", PATH_ADD_TO_TAIL);
 	g_pVGuiLocalize->AddFile("resource/portal2_%language%.txt");
 }
 
@@ -116,7 +116,35 @@ void AddCSGO(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/game/csgo_core/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/game/csgo_imported/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/game/csgo_lv/pak01_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
-	filesystem->AddSearchPath(CFmtStr("%s/csgo", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/csgo", path), "GAME", PATH_ADD_TO_TAIL);
+}
+
+// From here, mount the mods!
+
+void AddTSP(const char* path)
+{
+	filesystem->AddSearchPath(CFmtStr("%s/thestanleyparable", path), "GAME", PATH_ADD_TO_HEAD);
+}
+
+// Base 2013 MP SDK
+
+void AddSDK2013MP(const char* path)
+{
+	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete/hl2_complete_textures.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete/hl2_complete_sound_vo_english.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete/hl2_complete_sound_misc.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete/hl2_complete_misc.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete", path), "GAME", PATH_ADD_TO_HEAD);
+
+	filesystem->AddSearchPath(CFmtStr("%s/hl2/hl2_textures.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2/hl2_sound_vo_english.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2/hl2_sound_misc.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2/hl2_misc.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2", path), "GAME", PATH_ADD_TO_HEAD);
+
+	filesystem->AddSearchPath(CFmtStr("%s/hl2mp/hl2mp_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/hl2mp", path), "GAME", PATH_ADD_TO_HEAD);
+	filesystem->AddSearchPath(CFmtStr("%s/platform/platform_misc.vpk", path), "GAME", PATH_ADD_TO_TAIL);
 }
 
 void MountExtraContent()
@@ -200,6 +228,25 @@ void MountExtraContent()
 		char csgoPath[MAX_PATH];
 		steamapicontext->SteamApps()->GetAppInstallDir(730, csgoPath, sizeof(csgoPath));
 		AddCSGO(csgoPath);
+	}
+
+	// Mods
+
+	if (steamapicontext->SteamApps()->BIsAppInstalled(221910) && mountdepots->GetBool("tsp"))
+	{
+		char tspPath[MAX_PATH];
+		steamapicontext->SteamApps()->GetAppInstallDir(221910, tspPath, sizeof(tspPath));
+		AddTSP(tspPath);
+	}
+
+	// SDK 2013 MP
+	// We have to force this. Theres no way around this.
+
+	if (steamapicontext->SteamApps()->BIsAppInstalled(243750))
+	{
+		char sdk2013mpPath[MAX_PATH];
+		steamapicontext->SteamApps()->GetAppInstallDir(243750, sdk2013mpPath, sizeof(sdk2013mpPath));
+		AddSDK2013MP(sdk2013mpPath);
 	}
 
 	filesystem->AddSearchPath(CFmtStr("%s", CommandLine()->ParmValue("-game")), "GAME", PATH_ADD_TO_HEAD);
