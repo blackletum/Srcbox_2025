@@ -87,6 +87,10 @@ CEnvWindShared::CEnvWindShared() : m_WindAveQueue(10), m_WindVariationQueue(10)
 {
 	m_pWindSound = NULL;
 	s_windControllers.AddToTail( this );
+#ifdef SRCBOX
+	m_windRadius = -1.0f;
+	m_flTreeSwayScale = 1.0f;
+#endif
 }
 
 CEnvWindShared::~CEnvWindShared()
@@ -110,6 +114,11 @@ void CEnvWindShared::Init( int nEntIndex, int iRandomSeed, float flTime,
 	m_iWindDir = m_iInitialWindDir = iInitialWindYaw;
 	// Bound it for networking as a postive integer
 	m_iInitialWindDir = (int)( anglemod( m_iInitialWindDir ) );
+#ifdef SRCBOX
+
+	if (m_windRadiusInner == 0.0f)
+		m_windRadiusInner = m_windRadius;
+#endif
 
 	m_flAveWindSpeed = m_flWindSpeed = m_flInitialWindSpeed = flInitialWindSpeed;
 
@@ -210,6 +219,14 @@ float CEnvWindShared::WindThink( float flTime )
 	// frequency of calls to this function we produce the same wind speeds...
 
 	ComputeWindVariation( flTime );
+
+#if defined(SRCBOX) && defined(CLIENT_DLL)
+	if (m_flTreeSwayScale != 0.0f)
+	{
+		// Update Tree Sway
+		UpdateTreeSway(flTime);
+	}
+#endif
 
 	// Update Tree Sway
 	UpdateTreeSway( flTime );
@@ -335,11 +352,18 @@ Vector GetWindspeedAtLocation( const Vector &location )
 		CEnvWindShared *thisWindController = s_windControllers[it];
 		float distance = (thisWindController->m_location - location).Length();
 
-		if( distance < thisWindController->m_windRadius )
+		if (distance > thisWindController->m_windRadiusInner)
+		{
+			// New with Mapbase: Inner-radius!
+			Vector(0, 0, 0) += thisWindController->m_currentWindVector *
+				((distance - thisWindController->m_windRadiusInner) / (thisWindController->m_windRadius - thisWindController->m_windRadiusInner));
+		}
+		else
 		{
 			// This location is within our area of influence, so return our computer wind vector
 			return thisWindController->m_currentWindVector;
 		}
+
 	}
 
 	FOR_EACH_LL( s_windControllers, it )

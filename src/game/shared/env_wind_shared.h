@@ -161,6 +161,9 @@ public:
 	CNetworkVar( int, m_iMinWind );			// the slowest the wind can normally blow
 	CNetworkVar( int, m_iMaxWind );			// the fastest the wind can normally blow
 	CNetworkVar( int, m_windRadius );		// the radius this entity affects with its windiness, so a map can have multiple
+#ifdef SRCBOX
+	CNetworkVar(float, m_windRadiusInner);		// the inner-radius for noticable distance fading
+#endif
 	CNetworkVar( int, m_iMinGust );			// the slowest that a gust can be
 	CNetworkVar( int, m_iMaxGust );			// the fastest that a gust can be
 
@@ -180,6 +183,10 @@ public:
 	Vector m_currentWindVector;	// For all the talk of proper prediction, we ended up just storing and returning through a static vector.  Now we can have multiple env_wind, so we need this in here.
 	Vector m_CurrentSwayVector;
 	Vector m_PrevSwayVector;
+
+#ifdef SRCBOX
+	CNetworkVar(float, m_flTreeSwayScale);
+#endif
 
 	CNetworkVar( int, m_iInitialWindDir );
 	CNetworkVar( float, m_flInitialWindSpeed );
