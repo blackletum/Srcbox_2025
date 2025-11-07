@@ -9,7 +9,7 @@
 
 #include "vgui_controls/ProgressBar.h"
 #include "vgui_controls/AnimationController.h"
-//#include "vgui_controls/cvartogglecheckbutton.h"
+#include "vgui_controls/cvartogglecheckbutton.h"
 #include "vgui_controls/ComboBox.h"
 
 #include "tf_gc_client.h"
@@ -71,9 +71,9 @@ void CTFPingPanel::ApplySchemeSettings( IScheme *pScheme )
 
 	if ( m_pKeepTeamTogetherCheckBox )
 	{
-		//m_pKeepTeamTogetherCheckBox->SetSelected( true );
-		//m_pKeepTeamTogetherCheckBox->SetEnabled( false );
-		//m_pKeepTeamTogetherCheckBox->SetTooltip( GetDashboardTooltip( k_eMediumFont ), "#TF_MM_ComingSoon" );
+		m_pKeepTeamTogetherCheckBox->SetSelected( true );
+		m_pKeepTeamTogetherCheckBox->SetEnabled( false );
+		m_pKeepTeamTogetherCheckBox->SetTooltip( GetDashboardTooltip( k_eMediumFont ), "#TF_MM_ComingSoon" );
 	}
 
 	RegeneratePingPanels();
@@ -290,12 +290,12 @@ void CTFPingPanel::OnTextChanged( vgui::Panel *panel )
 //-----------------------------------------------------------------------------
 void CTFPingPanel::OnCheckButtonChecked( vgui::Panel *panel )
 {
-	//if ( m_pCustomPingCheckBox == panel )
-		//m_pCustomPingCheckBox->ApplyChanges();
-	//if ( m_pIgnoreInvitesCheckBox == panel )
-		//m_pIgnoreInvitesCheckBox->ApplyChanges();
-	//if ( m_pKeepTeamTogetherCheckBox == panel )
-		//m_pKeepTeamTogetherCheckBox->ApplyChanges();
+	if ( m_pCustomPingCheckBox == panel )
+		m_pCustomPingCheckBox->ApplyChanges();
+	if ( m_pIgnoreInvitesCheckBox == panel )
+		m_pIgnoreInvitesCheckBox->ApplyChanges();
+	if ( m_pKeepTeamTogetherCheckBox == panel )
+		m_pKeepTeamTogetherCheckBox->ApplyChanges();
 
 	m_pPingSlider->SetVisible( GTFPartyClient()->GetLocalGroupCriteria().GetCustomPingTolerance() > 0 );
 

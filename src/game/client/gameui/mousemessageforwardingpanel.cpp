@@ -4,6 +4,7 @@
 //
 //=============================================================================//
 
+
 #include "MouseMessageForwardingPanel.h"
 #include "KeyValues.h"
 
@@ -11,6 +12,8 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
+
+#ifdef HL2MP
 
 CMouseMessageForwardingPanel::CMouseMessageForwardingPanel( Panel *parent, const char *name ) : BaseClass( parent, name )
 {
@@ -37,3 +40,5 @@ void CMouseMessageForwardingPanel::OnMouseDoublePressed( vgui::MouseCode code )
 {
 	CallParentFunction( new KeyValues("MouseDoublePressed", "code", code) );
 }
+
+#endif

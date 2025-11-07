@@ -11,6 +11,8 @@
 #include "vgui_controls/Controls.h"
 #include "FileSystem.h"
 #include "EngineInterface.h"
+#include "../mod/basemodpanel.h"
+#include "basepanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -29,7 +31,7 @@ CModInfo &ModInfo()
 //-----------------------------------------------------------------------------
 CModInfo::CModInfo()
 {
-	m_pModData = new KeyValues("ModData");
+	m_pModData = new KeyValues("ModInfo");
 	m_wcsGameTitle[0] = 0;
 }
 
@@ -208,5 +210,5 @@ void CModInfo::LoadGameInfoFromBuffer( const char *buffer )
 //-----------------------------------------------------------------------------
 bool CModInfo::UseGameLogo()
 {
-	return ( Q_stricmp( m_pModData->GetString( "gamelogo", "0" ), "1" ) == 0 );
+	return ( Q_stricmp( m_pModData->GetString( "gamelogo", "0" ), "0" ) == 0 );
 }

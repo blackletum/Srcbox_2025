@@ -104,7 +104,7 @@ void CCasualProgressionDesc::SetupBadgePanel( CBaseModelPanel *pModelPanel, cons
 		break;
 	}
 
-	EnsureBadgePanelModel( pModelPanel );
+	//EnsureBadgePanelModel( pModelPanel );
 
 	int nBody = 0;
 	CStudioHdr studioHDR( pModelPanel->GetStudioHdr(), g_pMDLCache );

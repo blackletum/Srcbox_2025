@@ -19,7 +19,7 @@
 #include "VGenericConfirmation.h"
 #include "nb_header_footer.h"
 #include "materialsystem/materialsystem_config.h"
-#include "videocfg/videocfg.h"
+//#include "videocfg/videocfg.h"
 #include "cdll_util.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

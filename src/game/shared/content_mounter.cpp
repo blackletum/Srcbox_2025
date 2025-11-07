@@ -14,6 +14,7 @@
 #include <vgui/ILocalize.h>
 #include "icommandline.h"
 #include "tier3/tier3.h"
+
 void AddHL1(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/hl1/hl1_pak_dir.vpk", path), "GAME", PATH_ADD_TO_HEAD);
@@ -128,6 +129,7 @@ void AddTSP(const char* path)
 
 // Base 2013 MP SDK
 
+#ifdef HL2MP
 void AddSDK2013MP(const char* path)
 {
 	filesystem->AddSearchPath(CFmtStr("%s/hl2_complete/hl2_complete_textures.vpk", path), "GAME", PATH_ADD_TO_HEAD);
@@ -146,6 +148,7 @@ void AddSDK2013MP(const char* path)
 	filesystem->AddSearchPath(CFmtStr("%s/hl2mp", path), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s/platform/platform_misc.vpk", path), "GAME", PATH_ADD_TO_TAIL);
 }
+#endif
 
 void MountExtraContent()
 {
@@ -173,6 +176,7 @@ void MountExtraContent()
 		AddCSS(cssPath);
 	}
 
+#
 	if (steamapicontext->SteamApps()->BIsAppInstalled(320) && mountdepots->GetBool("hl2mp"))
 	{
 		char hl2mpPath[MAX_PATH];
@@ -239,8 +243,10 @@ void MountExtraContent()
 		AddTSP(tspPath);
 	}
 
-	// SDK 2013 MP
-	// We have to force this. Theres no way around this.
+#ifdef HL2MP
+
+	// Source SDK 2013 MP
+	// We have to force this when TF isn't defined, else whatever was loaded last will load.
 
 	if (steamapicontext->SteamApps()->BIsAppInstalled(243750))
 	{
@@ -249,6 +255,19 @@ void MountExtraContent()
 		AddSDK2013MP(sdk2013mpPath);
 	}
 
+#else
+
+	// Team Fortress 2
+	// We have to force this when TF is defined, else we load the above.
+
+	if (steamapicontext->SteamApps()->BIsAppInstalled(440))
+	{
+		char tf2Path[MAX_PATH];
+		steamapicontext->SteamApps()->GetAppInstallDir(440, tf2Path, sizeof(tf2Path));
+		AddTF2(tf2Path);
+	}
+
+#endif
 	filesystem->AddSearchPath(CFmtStr("%s", CommandLine()->ParmValue("-game")), "GAME", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s", CommandLine()->ParmValue("-game")), "MOD", PATH_ADD_TO_HEAD);
 	filesystem->AddSearchPath(CFmtStr("%s", CommandLine()->ParmValue("-game")), "MOD_WRITE", PATH_ADD_TO_HEAD);

@@ -9,6 +9,9 @@
 
 #include "basemodui.h"
 #include "VFlyoutMenu.h"
+#include "../../../gamepadui/gamepadui_frame.h"
+#include "../../../gamepadui/gamepadui_button.h"
+#include "../../../gamepadui/gamepadui_image.h"
 
 namespace BaseModUI {
 
@@ -18,6 +21,7 @@ class MainMenu : public CBaseModFrame, public IBaseModFrameListener, public Flyo
 
 public:
 	MainMenu(vgui::Panel *parent, const char *panelName);
+	virtual void MainMenuLogo(vgui::EditablePanel *parent);
 	~MainMenu();
 
 	void UpdateVisibility();
@@ -46,6 +50,10 @@ private:
 	//ImagePanel* m_pLogo;
 	wchar_t GameTitle[ 2 ];
 	vgui::HFont m_hLogoFont;
+	GamepadUIString m_LogoText[2];
+	GamepadUIImage  m_LogoImage;
+	KeyValues* m_pModData;
+	bool				m_bFullscreenPoster;
 
 	enum MainMenuQuickJoinHelpText
 	{

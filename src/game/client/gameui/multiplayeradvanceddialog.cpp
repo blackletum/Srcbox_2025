@@ -55,9 +55,11 @@ CMultiplayerAdvancedDialog::CMultiplayerAdvancedDialog(vgui::Panel *parent) : Ba
 
 	m_pList = NULL;
 
+#ifdef HL2MP
 	m_pDescription = new CInfoDescription( m_pListPanel );
 	m_pDescription->InitFromFile( DEFAULT_OPTIONS_FILE );
 	m_pDescription->InitFromFile( OPTIONS_FILE );
+#endif
 	m_pDescription->TransferCurrentValues( NULL );
 
 	LoadControlSettings("Resource\\MultiplayerAdvancedDialog.res");
@@ -366,6 +368,7 @@ void CMultiplayerAdvancedDialog::SaveValues()
 //-----------------------------------------------------------------------------
 // Purpose: Constructor, load/save client settings object
 //-----------------------------------------------------------------------------
+#ifdef HL2MP
 CInfoDescription::CInfoDescription( CPanelListPanel *panel )
 : CDescription( panel )
 {
@@ -445,5 +448,5 @@ void CInfoDescription::WriteFileHeader( FileHandle_t fp )
 	g_pFullFileSystem->FPrintf( fp, "// File generated:  %s %s\r\n", szDate, szTime );
 	g_pFullFileSystem->FPrintf( fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n" );
 }
-
+#endif
 //-----------------------------------------------------------------------------

@@ -34,6 +34,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: class for loading/saving server config file
 //-----------------------------------------------------------------------------
+
 class CServerDescription : public CDescription
 {
 public:
@@ -50,9 +51,11 @@ CCreateMultiplayerGameGameplayPage::CCreateMultiplayerGameGameplayPage(vgui::Pan
 {
 	m_pOptionsList = new CPanelListPanel(this, "GameOptions");
 
+#ifdef HL2MP
 	m_pDescription = new CServerDescription(m_pOptionsList);
 	m_pDescription->InitFromFile( DEFAULT_OPTIONS_FILE );
 	m_pDescription->InitFromFile( OPTIONS_FILE );
+#endif
 	m_pList = NULL;
 
 	LoadControlSettings("Resource/CreateMultiplayerGameGameplayPage.res");
@@ -385,6 +388,7 @@ void CCreateMultiplayerGameGameplayPage::GatherCurrentValues()
 //-----------------------------------------------------------------------------
 // Purpose: Constructor, load/save server settings object
 //-----------------------------------------------------------------------------
+#ifdef HL2MP
 CServerDescription::CServerDescription(CPanelListPanel *panel) : CDescription(panel)
 {
 	setHint( "// NOTE:  THIS FILE IS AUTOMATICALLY REGENERATED, \r\n"
@@ -481,3 +485,4 @@ void CServerDescription::WriteFileHeader( FileHandle_t fp )
 	g_pFullFileSystem->FPrintf( fp, "//\r\n//\r\n// Cvar\t-\tSetting\r\n\r\n" );
 #endif
 }
+#endif

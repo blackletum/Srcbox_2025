@@ -42,14 +42,14 @@ IProgressionDesc::IProgressionDesc( const char* pszBadgeName
 
 
 #ifdef CLIENT_DLL
-void IProgressionDesc::EnsureBadgePanelModel( CBaseModelPanel *pModelPanel ) const
+/*void IProgressionDesc::EnsureBadgePanelModel( CBaseModelPanel *pModelPanel ) const
 {
 	studiohdr_t* pHDR = pModelPanel->GetStudioHdr();
 	if ( !pHDR || !(CUtlString( pHDR->name ).UnqualifiedFilename() == m_strBadgeName.UnqualifiedFilename()) )
 	{
 		pModelPanel->SetMDL( m_strBadgeName );
 	}
-}
+}*/
 #endif // CLIENT_DLL
 
 const LevelInfo_t& IProgressionDesc::GetLevelByNumber( uint32 nNumber ) const

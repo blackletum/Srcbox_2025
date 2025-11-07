@@ -18,6 +18,11 @@ $Include "$SRCDIR\game\client\client_econ_base.vpc"
 $Include "$SRCDIR\vpc_scripts\source_saxxyawards.vpc" [!$SOURCESDK]
 $Include "$SRCDIR\utils\itemtest_lib\itemtest_lib_support.vpc" [$WORKSHOP_IMPORT_ENABLE]
 
+//-----------------------------------------
+// Alien Swarms GameUI for Team Fortress 2
+//-----------------------------------------
+$Include "$SRCDIR\game\client\client_gameui_tf.vpc"
+
 $Configuration
 {
 	$Compiler

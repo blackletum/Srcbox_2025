@@ -66,7 +66,7 @@ void CDrilloProgressionDesc::SetupBadgePanel( CBaseModelPanel *pModelPanel, cons
 	int nSkullsBodygroup	= ( nLevelIndex % 6 );
 	int nSparkleBodygroup	= 0;
 	if ( level.m_nLevelNum == 18 ) nSparkleBodygroup = 1;
-	EnsureBadgePanelModel( pModelPanel );
+	//EnsureBadgePanelModel( pModelPanel );
 
 	int nBody = 0;
 	CStudioHdr studioHDR( pModelPanel->GetStudioHdr(), g_pMDLCache );
@@ -146,7 +146,7 @@ void CGlickoProgressionDesc::SetupBadgePanel( CBaseModelPanel *pModelPanel, cons
 		nLaurelBodyGroup = nLevelIndex % 3 > 0 ? 1 : 0;
 	}
 
-	EnsureBadgePanelModel( pModelPanel );
+	//EnsureBadgePanelModel( pModelPanel );
 
 	int nBody = 0;
 	CStudioHdr studioHDR( pModelPanel->GetStudioHdr(), g_pMDLCache );

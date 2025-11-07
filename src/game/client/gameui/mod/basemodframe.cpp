@@ -46,7 +46,7 @@ CUtlVector< IBaseModFrameListener * > CBaseModFrame::m_FrameListeners;
 
 bool CBaseModFrame::m_DrawTitleSafeBorder = false;
 
-ConVar ui_gameui_modal( "ui_gameui_modal", "1", FCVAR_CLIENTDLL, "If set, the game UI pages will take modal input focus." );
+ConVar ui_gameui_modal( "ui_gameui_modal", "0", FCVAR_CLIENTDLL, "If set, the game UI pages will take modal input focus." );
 
 //=============================================================================
 CBaseModFrame::CBaseModFrame( vgui::Panel *parent, const char *panelName, bool okButtonEnabled, 

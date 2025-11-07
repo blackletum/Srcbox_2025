@@ -17,10 +17,6 @@ $Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
 $include "$SRCDIR\vpc_scripts\protobuf_builder.vpc"
 $Include "$SRCDIR\vpc_scripts\source_replay.vpc"	[$TF]
 $Include "$SRCDIR\game\protobuf_include.vpc"
-//-----------------------------------------
-// Future self, this is for Alien Swarms GameUI!
-//-----------------------------------------
-$Include "$SRCDIR\game\client\client_gameui.vpc"
 
 $Configuration	"Debug"
 {

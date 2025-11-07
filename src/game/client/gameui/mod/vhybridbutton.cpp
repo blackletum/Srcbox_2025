@@ -265,8 +265,6 @@ void BaseModHybridButton::SetHelpText( const char* tooltip, bool enabled )
 void BaseModHybridButton::PaintButtonEx()
 {
 	vgui::IScheme *pScheme = vgui::scheme()->GetIScheme( GetScheme() );
-	Color blotchColor = pScheme->GetColor( "HybridButton.BlotchColor", Color( 0, 0, 0, 255 ) );
-	Color borderColor = pScheme->GetColor( "HybridButton.BorderColor", Color( 0, 0, 0, 255 ) );
 
 	int x, y;
 	int wide, tall;
@@ -301,22 +299,26 @@ void BaseModHybridButton::PaintButtonEx()
 			if ( m_nStyle == BUTTON_RED || m_nStyle == BUTTON_REDMAIN )
 			{
 				//col.SetColor( 0, 128, 128, 255 );
-				col.SetColor( 169, 213, 255, 255 );
+				//col.SetColor( 169, 213, 255, 255 );
+				col.SetColor(190, 121, 6, 255);
 			}
 			else if ( m_nStyle == BUTTON_ALIENSWARMMENUBUTTON || m_nStyle == BUTTON_ALIENSWARMMENUBUTTONSMALL )
 			{
-				col.SetColor( 135, 170, 193, 255 );
+				//col.SetColor( 135, 170, 193, 255 );
+				col.SetColor( 190, 121, 6, 255 );
 			}
-			else
+			else // Not focused
 			{
 				//col.SetColor( 125, 125, 125, 255 );
-				col.SetColor( 83, 148, 192, 255 );
+				//col.SetColor( 83, 148, 192, 255 );
+				col.SetColor(204, 204, 204, 255);
 			}
 			break;
 		case Disabled:
 			//col.SetColor( 88, 97, 104, 255 );
 			//col.SetColor( 65, 74, 96, 255 );
-			col.SetColor( 32, 59, 82, 255 );
+			//col.SetColor( 32, 59, 82, 255 );
+			col.SetColor(255, 255, 255, 255);
 			bDrawText = true;
 			bDrawGlow = false;
 			break;
@@ -358,69 +360,38 @@ void BaseModHybridButton::PaintButtonEx()
 	textTall = clamp( textTall, 0, tall - m_textInsetX * 2 );
 
 	int textInsetX = m_textInsetX;
-	if ( m_nStyle == BUTTON_DIALOG )
-	{
-		// dialog buttons are centered
-		textInsetX = ( wide - textWide ) / 2;
-	}
 
 	if ( FlyoutMenu::GetActiveMenu() && FlyoutMenu::GetActiveMenu()->GetNavFrom() != this )
 	{
 		bDrawCursor = false;
 	}
 
+	Color blotchColor = pScheme->GetColor("HybridButton.BlotchColor", Color(137, 82, 6, 255));
+	Color blotchColor2 = pScheme->GetColor("HybridButton.BlotchColor2", Color(83, 63, 6, 255));
+	Color borderColor = pScheme->GetColor("HybridButton.BorderColor", Color(195, 123, 6, 255));
+
 	if ( bDrawCursor )
 	{
-		// draw backing rectangle
-		if ( curState == Open )
-		{
-			surface()->DrawSetColor( Color( 0, 0, 0, 255 ) );
-			surface()->DrawFilledRectFade( x, y, x+wide, y+tall, 0, 255, true );
-		}
-
+		// I removed a shitload of code from here. Orangebox didn't have flyouts
 		// draw blotch
-		surface()->DrawSetColor( blotchColor );
-		if ( m_nStyle == BUTTON_DIALOG )
-		{
-			int blotchWide = textWide;
-			int blotchX = x + textInsetX;
-			surface()->DrawFilledRectFade( blotchX, y, blotchX + 0.50f * blotchWide, y+tall, 0, 150, true );
-			surface()->DrawFilledRectFade( blotchX + 0.50f * blotchWide, y, blotchX + blotchWide, y+tall, 150, 0, true );
-		}
-		else
-		{
-			int blotchWide = textWide + vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 40 );
-			int blotchX = x + textInsetX;
-			surface()->DrawFilledRectFade( blotchX, y, blotchX + 0.25f * blotchWide, y+tall, 0, 150, true );
-			surface()->DrawFilledRectFade( blotchX + 0.25f * blotchWide, y, blotchX + blotchWide, y+tall, 150, 0, true );
-		}
 
-		// draw border lines
+		//surface()->DrawSetTexture("console/background01_widescreen");
+		surface()->DrawSetColor( blotchColor );
+		surface()->DrawFilledRectFade(0, 0, 340, 32, 255, 0, true);
+
+		surface()->DrawSetColor(blotchColor2);
+		surface()->DrawFilledRectFade(200, 0, 300, 32, 200, 0, true);
+		surface()->DrawFilledRectFade(100, 0, 200, 32, 0, 200, true);
+
+		// draw border
 		surface()->DrawSetColor( borderColor );
-		if ( curState == Open )
-		{
-			FlyoutMenu *pActiveFlyout = FlyoutMenu::GetActiveMenu();
-			BaseModHybridButton *button = dynamic_cast< BaseModHybridButton* >( pActiveFlyout ? pActiveFlyout->GetNavFrom() : NULL );
-			if ( pActiveFlyout && pActiveFlyout->GetOriginalTall() == 0 && button && button == this )
-			{
-				surface()->DrawFilledRectFade( x, y, x + wide, y+2, 255, 0, true );
-			}
-			else
-			{
-				// the border lines end at the beginning of the flyout
-				// the flyout will draw to complete the look
-				surface()->DrawFilledRectFade( x, y, x + wide, y+2, 0, 255, true );
-				surface()->DrawFilledRectFade( x, y+tall-2, x + wide, y+tall, 0, 255, true );
-			}
-		}
-		else
-		{
-			// top and bottom border lines
-			surface()->DrawFilledRectFade( x, y, x + 0.5f * wide, y+2, 0, 255, true );
-			surface()->DrawFilledRectFade( x + 0.5f * wide, y, x + wide, y+2, 255, 0, true );
-			surface()->DrawFilledRectFade( x, y+tall-2, x + 0.5f * wide, y+tall, 0, 255, true );
-			surface()->DrawFilledRectFade( x + 0.5f * wide, y+tall-2, x + wide, y+tall, 255, 0, true );
-		}
+		surface()->DrawFilledRectFade( x * wide, y, 220, y+2, 255, 0, true );
+		//surface()->DrawFilledRectFade( x * wide, y+2, x + wide, y, 255, 0, true );
+		surface()->DrawFilledRectFade( x * wide, y + tall - 2, 220, y + tall, 255, 0, true);
+
+		//17 2
+		surface()->DrawSetColor(255, 0, 0, 255);
+		surface()->DrawFilledRectFade(20, -20 , 10, 32, 255, 255, false);
 	}
 
 	// assume drawn, unless otherwise shortened with ellipsis
@@ -443,7 +414,7 @@ void BaseModHybridButton::PaintButtonEx()
 			}
 
 			int imageX = x + textInsetX + textLen + m_iSelectedArrowSize / 2;
-			int imageY = y + ( textTall_ - m_iSelectedArrowSize ) / 2;
+			int imageY = y + ( textTall_ - m_iSelectedArrowSize ) / 2 + 10;
 
 			if ( ( imageX + m_iSelectedArrowSize ) > GetWide() )
 			{
@@ -460,14 +431,15 @@ void BaseModHybridButton::PaintButtonEx()
 			}
 
 			vgui::surface()->DrawSetColor( col );
-			vgui::surface()->DrawTexturedRect( imageX, imageY, imageX + m_iSelectedArrowSize, imageY + m_iSelectedArrowSize );
+			vgui::surface()->DrawTexturedRect( imageX, imageY, imageX + m_iSelectedArrowSize, imageY + m_iSelectedArrowSize + 10 );
 			vgui::surface()->DrawSetTexture( 0 );
 
 			availableWidth -= m_iSelectedArrowSize * 2;
 		}
 
 		vgui::surface()->DrawSetTextFont( m_hTextFont );
-		vgui::surface()->DrawSetTextPos( x + textInsetX, y + m_textInsetY  );
+		// the plus 5 here is to fix centering the text, akin to orangebox itself. asw doesn't do this, and its retarded.
+		vgui::surface()->DrawSetTextPos( x + textInsetX, y + m_textInsetY);
 		vgui::surface()->DrawSetTextColor( col );
 
 		if ( textWide > availableWidth )
@@ -502,7 +474,7 @@ void BaseModHybridButton::PaintButtonEx()
 		textcol[ 3 ] = 64;
 
 		vgui::surface()->DrawSetTextFont( m_hTextFont );
-		vgui::surface()->DrawSetTextPos( x + textInsetX, y + m_textInsetY  );
+		vgui::surface()->DrawSetTextPos( x + textInsetX, y + m_textInsetY + 5 );
 		vgui::surface()->DrawSetTextColor( textcol );
 		vgui::surface()->DrawPrintText( szUnicode, len );
 	}
@@ -599,6 +571,9 @@ void BaseModHybridButton::Paint()
 void BaseModHybridButton::ApplySettings( KeyValues * inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
+
+	SetTall(32);
+	SetWide(339);
 
 	vgui::IScheme *scheme = vgui::scheme()->GetIScheme( GetScheme() );
 	if( !scheme )

@@ -110,6 +110,7 @@ CBaseModPanel::CBaseModPanel(): BaseClass(0, "CBaseModPanel"),
 	m_DelayActivation = 3;
 
 	m_UIScheme = vgui::scheme()->LoadSchemeFromFileEx( 0, "resource/SwarmSchemeNew.res", "SwarmScheme" );
+	// Below is a different testing scheme that uses the old BaseModUI scheme file
 	//m_UIScheme = vgui::scheme()->LoadSchemeFromFileEx(0, " resource/SourceScheme.res", "SwarmScheme");
 	SetScheme( m_UIScheme );
 
@@ -877,7 +878,7 @@ void CBaseModPanel::OnLevelLoadingStarted( char const *levelName, bool bShowProg
 	{
 		// I added this check to insure that if we are in a background, we load the menu. Appears to have been removed in L4D and above.
 		//engine->IsPaused();
-		engine->ClientCmd_Unrestricted("+pause");
+		//engine->ClientCmd_Unrestricted("pause"); // not required anymore. sp did
 		type = LoadingProgress::LT_MAINMENU;
 	}
 	else
