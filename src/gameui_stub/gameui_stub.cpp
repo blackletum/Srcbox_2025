@@ -26,19 +26,18 @@ static CreateInterfaceFn ClientFactory()
             // If we don't load the client last, the game will outright crash.
             // This is because the client has our new interface, and not passing
             // an interface will outright crash the game because no gameui_interface_version is found.
-            n = Sys_LoadModule("gamepadui");
             n = Sys_LoadModule("client", SYS_NOLOAD);
         }
 
-        static CreateInterfaceFn fm = Sys_GetFactory(n);
-        return fm;
+        static CreateInterfaceFn fn = Sys_GetFactory(n);
+        return fn;
     }
     else
     {
         // Fallback to the clients version of the interface from Alien Swarm.
         // This is dubbed old gamepadui
-        static CSysModule* m = Sys_LoadModule("client", SYS_NOLOAD);
-        static CreateInterfaceFn fn = Sys_GetFactory(m);
+        static CSysModule* n = Sys_LoadModule("client", SYS_NOLOAD);
+        static CreateInterfaceFn fn = Sys_GetFactory(n);
         return fn;
     }
 }
