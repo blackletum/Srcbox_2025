@@ -153,12 +153,6 @@
 #include "discord_rpc.h"
 #include <time.h>
 
-#define SWARM_GUI 1
-
-
-// Why is this defined here???? Use VPC to define this!!!
-//#define LUA_SDK 1
-
 #include "GameUI/IGameUI.h"
 
 
@@ -421,26 +415,15 @@ const bool IsaSteamDeck()
 	if (CommandLine()->FindParm("-nogamepadui"))
 		return false;
 
+	//if (CommandLine()->FindParm("-oldgameui"))
+		//return false;
+
 	const char* pszSteamDeckEnv = getenv("SteamDeck");
 	if (pszSteamDeckEnv && *pszSteamDeckEnv)
 		return atoi(pszSteamDeckEnv) != 0;
 
 	return false;
 }
-#endif
-
-#ifdef SWARM_GUI
-//#pragma message(FILE_LINE_STRING " !!FIXME!! replace all this with Sys_LoadGameModule")
-static class DllOverride {
-public:
-	DllOverride() {
-
-		Sys_LoadInterface("filesystem_stdio.dll", FILESYSTEM_INTERFACE_VERSION, nullptr, (void**)&g_pFullFileSystem);
-		const char* pGameDir = CommandLine()->ParmValue("-game", "hl2mp");
-		pGameDir = VarArgs("%s/bin/x64", pGameDir);
-		g_pFullFileSystem->AddSearchPath(pGameDir, "EXECUTABLE_PATH", PATH_ADD_TO_HEAD);
-	}
-} g_DllOverride;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1032,6 +1015,24 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	InitCRTMemDebug();
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f );
 
+#ifdef SWARM_INTERFACE
+	if (CommandLine()->FindParm("-oldgameui")) {
+		// nothings here. we don't want to load a gameui like this. required for tools and such
+	}
+	else if (CommandLine()->FindParm("-gamepadui")) {
+		// don't load client for this either. load the newer gamepadui
+	} else {
+		static class DllOverride {
+		public:
+			DllOverride() {
+				Sys_LoadInterface("filesystem_stdio.dll", FILESYSTEM_INTERFACE_VERSION, nullptr, (void**)&g_pFullFileSystem);
+				const char* pGameDir = CommandLine()->ParmValue("-game", "hl2mp");
+				pGameDir = VarArgs("%s/bin/x64", pGameDir);
+				g_pFullFileSystem->AddSearchPath(pGameDir, "EXECUTABLE_PATH", PATH_ADD_TO_HEAD);
+			}
+		} g_DllOverride;
+	}
+#endif
 
 #ifdef SIXENSE
 	g_pSixenseInput = new SixenseInput;
@@ -1156,7 +1157,9 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 	g_pcv_ThreadMode = g_pCVar->FindVar( "host_thread_mode" );
 
+#ifdef HL2MP
 	MountExtraContent();
+#endif
 
 	if (!Initializer::InitializeAllObjects())
 		return false;
@@ -1856,7 +1859,8 @@ void CHLClient::View_Fade( ScreenFade_t *pSF )
 		vieweffects->Fade( *pSF );
 }
 
-ConVar gamemode("sv_gamemode", "coop", FCVAR_REPLICATED | FCVAR_NOTIFY, "Gamemode");
+#include "../shared/gamerules.h"
+#include "hl2mp_gamerules.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Per level init
@@ -1961,18 +1965,18 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	}
 #endif
 
-	ConVar* gm = cvar->FindVar("sv_gamemode");
-
 	// Discord RPC
 	if (!g_bTextMode)
 	{
 		DiscordRichPresence discordPresence;
 		memset(&discordPresence, 0, sizeof(discordPresence));
+		const char* pszGameMode = "";
+		CHL2MPRules* pRules = dynamic_cast<CHL2MPRules*>(GameRules());
 
 		char state[256];
 		char details[256];
 		//discordPresence.state = "Coral Buddies!!!!";
-		sprintf(state, "Gamemode: %s", gm->GetString());
+		sprintf(state, "Gamemode: %s", pszGameMode = pRules->GetGameDescription());
 		sprintf(details, "Currently in map: %s", pMapName);
 		discordPresence.state = state;
 		discordPresence.details = details;

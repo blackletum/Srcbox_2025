@@ -140,24 +140,6 @@ extern ConVar tf_mm_servermode;
 #include "replay/ireplaysystem.h"
 #endif
 
-#define SWARM_INTERFACE_SERVER 1
-
-// Why is this defined here??? use VPC to define this! - Vvis :3 
-//#define LUA_SDK 1
-
-#ifdef SWARM_INTERFACE_SERVER
-//#pragma message(FILE_LINE_STRING " !!FIXME!! replace all this with Sys_LoadGameModule")
-static class DllOverride {
-public:
-	DllOverride() {
-		Sys_LoadInterface("filesystem_stdio.dll", FILESYSTEM_INTERFACE_VERSION, nullptr, (void**)&g_pFullFileSystem);
-		const char* pGameDir = CommandLine()->ParmValue("-game", "hl2mp");
-		pGameDir = UTIL_VarArgs("%s/bin/x64", pGameDir);
-		g_pFullFileSystem->AddSearchPath(pGameDir, "EXECUTABLE_PATH", PATH_ADD_TO_HEAD);
-	}
-} g_DllOverride;
-#endif
-
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -601,6 +583,25 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory, 
 		CGlobalVars *pGlobals)
 {
+
+#ifdef SWARM_INTERFACE
+	if (CommandLine()->FindParm("-oldgameui")) {
+		// nothings here. we don't want to load a gameui like this. required for tools and such
+	} else if (CommandLine()->FindParm("-gamepadui")) {
+		// don't load client for this either. load the newer gamepadui
+	} else {
+		static class DllOverride {
+		public:
+			DllOverride() {
+				Sys_LoadInterface("filesystem_stdio.dll", FILESYSTEM_INTERFACE_VERSION, nullptr, (void**)&g_pFullFileSystem);
+				const char* pGameDir = CommandLine()->ParmValue("-game", "hl2mp");
+				pGameDir = UTIL_VarArgs("%s/bin/x64", pGameDir);
+				g_pFullFileSystem->AddSearchPath(pGameDir, "EXECUTABLE_PATH", PATH_ADD_TO_HEAD);
+			}
+		} g_DllOverride;
+	}
+#endif
+
 	ConnectTier1Libraries( &appSystemFactory, 1 );
 	ConnectTier2Libraries( &appSystemFactory, 1 );
 	ConnectTier3Libraries( &appSystemFactory, 1 );
@@ -719,7 +720,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	g_pGameSaveRestoreBlockSet->AddBlockHandler( GetEventQueueSaveRestoreBlockHandler() );
 	g_pGameSaveRestoreBlockSet->AddBlockHandler( GetAchievementSaveRestoreBlockHandler() );
 
+#ifdef HL2MP
 	MountExtraContent();
+#endif
 
 	// The string system must init first + shutdown last
 	IGameSystem::Add( GameStringSystem() );
