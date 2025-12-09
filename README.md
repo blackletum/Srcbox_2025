@@ -48,11 +48,17 @@ Some code was kindly donated by Lambdagon (Vvis) to aid parts of the L4D parts o
 
 Alot of L4D stuff from Alien Swarm was ported over by these guys, and has been used as a reference for how to plug it into this mod.
 
+<img width="561" height="116" alt="momentum_mod_logo_smallist" src="https://github.com/user-attachments/assets/c6209c0c-e4e9-49f5-82b0-11bd62d77aa5" />
 
+**Momentum Mod**
+
+Some Mapbase changes originate from here, like the postprocess controller, dof, and other such changes.
 
 *Special thanks:*
 
-	TheMaster974 - Advice and video tutorials
-	Shiro - Shader advice
+	TheMaster974 - Advice, video tutorials, sdk examples
+	Shiro - Shader backend (currently not public)
 	VDC - Fixs to specific things, so some stuff is akin to the newer branchs
+	PiMoNFeeD - BSPConvert, some other technical advice
+	Vvis/Vis/Lambdagon - Valuable tester and issue reporter from Fortress Connected
 	And others who gave some valuable input
