@@ -420,6 +420,8 @@ public:
 #endif
 
 	bool					HasPhysicsFlag( unsigned int flag ) { return (m_afPhysicsFlags & flag) != 0; }
+	
+	virtual	CBaseCombatCharacter *ActivePlayerCombatCharacter( void ) { return this; }
 
 	// Weapon stuff
 	virtual Vector			Weapon_ShootPosition( );
@@ -861,6 +863,10 @@ public:
 	void InitFogController( void );
 	void InputSetFogController( inputdata_t &inputdata );
 
+	CNetworkHandle(CPostProcessController, m_hPostProcessCtrl);	// active postprocessing controller
+	void InitPostProcessController(void);
+	void InputSetPostProcessController(inputdata_t& inputdata);
+
 	// Used by env_soundscape_triggerable to manage when the player is touching multiple
 	// soundscape triggers simultaneously.
 	// The one at the HEAD of the list is always the current soundscape for the player.
@@ -1150,6 +1156,20 @@ private:
 	bool					m_bPlayerUnderwater;
 
 	EHANDLE					m_hViewEntity;
+
+//#ifdef ARGG
+	public:
+		// adnan
+		// send the use angles for the current player... set when they press use
+		// UPDATE: this could be improved somehow by only storing these on the server side
+		//  - set a flag on the client and send that, stating that the viewangles shouldnt change
+		//  - ... maybe not
+		CNetworkQAngle(m_vecUseAngles);
+		// end adnan
+
+	private:
+
+//#endif
 
 	// Movement constraints
 	CNetworkHandle( CBaseEntity, m_hConstraintEntity );

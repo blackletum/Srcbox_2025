@@ -460,6 +460,8 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_nNumCrateHudHints, FIELD_INTEGER ),
 
+	DEFINE_FIELD(m_hPostProcessCtrl, FIELD_EHANDLE),
+
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetScriptOverlayMaterial", InputSetScriptOverlayMaterial ),
 
 	// DEFINE_FIELD( m_nBodyPitchPoseParam, FIELD_INTEGER ),
@@ -652,6 +654,8 @@ CBasePlayer::CBasePlayer( )
 	m_nMovementTicksForUserCmdProcessingRemaining = 0;
 
 	m_flLastObjectiveTime = -1.f;
+
+	m_hPostProcessCtrl.Set(NULL);
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -4941,6 +4945,9 @@ CBaseEntity *CBasePlayer::EntSelectSpawnPoint()
 		pSpot = gEntList.FindEntityByClassname( g_pLastSpawn, "info_player_start");
 		if ( pSpot ) 
 			goto ReturnSpot;
+		pSpot = gEntList.FindEntityByClassname(g_pLastSpawn, "info_survivor_position");
+		if (pSpot)
+			goto ReturnSpot;
 	}
 	else if ( g_pGameRules->IsDeathmatch() )
 	{
@@ -4950,6 +4957,11 @@ CBaseEntity *CBasePlayer::EntSelectSpawnPoint()
 			pSpot = gEntList.FindEntityByClassname( pSpot, "info_player_deathmatch" );
 		if ( !pSpot )  // skip over the null point
 			pSpot = gEntList.FindEntityByClassname( pSpot, "info_player_deathmatch" );
+
+		for (int i = random->RandomInt(1, 5); i > 0; i--)
+			pSpot = gEntList.FindEntityByClassname(pSpot, "info_survivor_position");
+		if (!pSpot)  // skip over the null point
+			pSpot = gEntList.FindEntityByClassname(pSpot, "info_survivor_position");
 
 		CBaseEntity *pFirstSpot = pSpot;
 
@@ -4964,6 +4976,8 @@ CBaseEntity *CBasePlayer::EntSelectSpawnPoint()
 					{
 						pSpot = gEntList.FindEntityByClassname( pSpot, "info_player_deathmatch" );
 						continue;
+						pSpot = gEntList.FindEntityByClassname( pSpot, "info_survivor_position");
+						continue;
 					}
 
 					// if so, go to pSpot
@@ -4972,6 +4986,7 @@ CBaseEntity *CBasePlayer::EntSelectSpawnPoint()
 			}
 			// increment pSpot
 			pSpot = gEntList.FindEntityByClassname( pSpot, "info_player_deathmatch" );
+			pSpot = gEntList.FindEntityByClassname( pSpot, "info_survivor_position" );
 		} while ( pSpot != pFirstSpot ); // loop if we're not back to the start
 
 		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
@@ -4993,6 +5008,12 @@ CBaseEntity *CBasePlayer::EntSelectSpawnPoint()
 	{
 		pSpot = FindPlayerStart( "info_player_start" );
 		if ( pSpot )
+			goto ReturnSpot;
+	}
+	else if (!gpGlobals->startspot || !strlen(STRING(gpGlobals->startspot)))
+	{
+		pSpot = FindPlayerStart("info_survivor_position");
+		if (pSpot)
 			goto ReturnSpot;
 	}
 	else
@@ -5070,6 +5091,7 @@ void CBasePlayer::Spawn( void )
 
 	// Initialize the fog and postprocess controllers.
 	InitFogController();
+	InitPostProcessController();
 
 	m_DmgTake		= 0;
 	m_DmgSave		= 0;
@@ -8198,6 +8220,8 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropArray	( SendPropEHandle( SENDINFO_ARRAY( m_hViewModel ) ), m_hViewModel ),
 		SendPropString	(SENDINFO(m_szLastPlaceName) ),
 
+		// Postprocess data
+		SendPropEHandle( SENDINFO(m_hPostProcessCtrl) ),
 #if defined USES_ECON_ITEMS
 		SendPropUtlVector( SENDINFO_UTLVECTOR( m_hMyWearables ), MAX_WEARABLES_SENT_FROM_SERVER, SendPropEHandle( NULL, 0 ) ),
 #endif // USES_ECON_ITEMS
@@ -8953,6 +8977,37 @@ void CBasePlayer::InitFogController( void )
 {
 	// Setup with the default master controller.
 	m_Local.m_PlayerFog.m_hCtrl = FogSystem()->GetMasterFogController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InitPostProcessController(void)
+{
+	// Setup with the default master controller.
+	m_hPostProcessCtrl = PostProcessSystem()->GetMasterPostProcessController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputSetPostProcessController(inputdata_t& inputdata)
+{
+	// Find the postprocess controller with the given name.
+	CPostProcessController* pController = NULL;
+	if (inputdata.value.FieldType() == FIELD_EHANDLE)
+	{
+		pController = dynamic_cast<CPostProcessController*>(inputdata.value.Entity().Get());
+	}
+	else
+	{
+		pController = dynamic_cast<CPostProcessController*>(gEntList.FindEntityByName(NULL, inputdata.value.String()));
+	}
+
+	if (pController)
+	{
+		m_hPostProcessCtrl.Set(pController);
+	}
 }
 
 //-----------------------------------------------------------------------------

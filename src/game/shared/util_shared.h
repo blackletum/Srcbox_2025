@@ -625,6 +625,22 @@ public:
 		return (m_timestamp > 0.0f) ? m_duration : 0.0f;
 	}
 
+	/// 1.0 for newly started, 0.0 for elapsed
+	float GetRemainingRatio(void) const
+	{
+		if (HasStarted())
+		{
+			float left = GetRemainingTime() / m_duration;
+		if (left < 0.0f)
+			return 0.0f;
+		if (left > 1.0f)
+			return 1.0f;
+		return left;
+	}
+
+return 0.0f;
+	}
+
 private:
 	float m_duration;
 	float m_timestamp;
@@ -693,4 +709,11 @@ const char		   *UTIL_GetActiveOperationString();
 
 const char *GetCleanMapName( const char *pszUnCleanMapName, char (&pszTmp)[256] );
 
+inline bool	MapHasPrefix( const char *pszUnCleanMapName, const char *prefix )
+{ 
+	char maptmp[256];
+	const char *pszCleanMapName = GetCleanMapName( pszUnCleanMapName, maptmp );
+
+	return StringHasPrefix(pszCleanMapName, prefix);
+}
 #endif // UTIL_SHARED_H
