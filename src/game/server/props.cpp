@@ -4766,6 +4766,7 @@ BEGIN_DATADESC(CPropDoorRotating)
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(prop_door_rotating, CPropDoorRotating);
+LINK_ENTITY_TO_CLASS(prop_door_rotating_checkpoint, CPropDoorRotating); // L4D and L4D2 Doortype.
 
 //-----------------------------------------------------------------------------
 // Destructor
