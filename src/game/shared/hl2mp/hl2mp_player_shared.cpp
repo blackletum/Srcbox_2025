@@ -15,6 +15,13 @@
 #include "hl2mp_player.h"
 #endif
 
+#ifdef LUA_SDK
+#include "luamanager.h"
+#include "lhl2mp_player_shared.h"
+#include "mathlib/lvector.h"
+#include "lvphysics_interface.h"
+#endif
+
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 

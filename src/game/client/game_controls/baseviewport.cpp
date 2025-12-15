@@ -49,6 +49,11 @@
 #include "ienginevgui.h"
 #include "iclientmode.h"
 
+// lua hooks
+#ifdef LUA_SDK
+#include "luamanager.h"
+#endif
+
 #include "tier0/etwprof.h"
 
 #if defined( REPLAY_ENABLED )
