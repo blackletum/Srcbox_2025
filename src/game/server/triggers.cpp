@@ -39,8 +39,14 @@
 #include "hl2_player.h"
 #endif
 
+#ifdef LUA_SDK
+#include "luamanager.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+#define HL1_DLL true
 
 #define DEBUG_TRANSITIONS_VERBOSE	2
 ConVar g_debug_transitions( "g_debug_transitions", "0", FCVAR_NONE, "Set to 1 and restart the map to be warned if the map has no trigger_transition volumes. Set to 2 to see a dump of all entities & associated results during a transition." );
@@ -599,6 +605,58 @@ void CBaseTrigger::InputToggle( inputdata_t &inputdata )
 	PhysicsTouchTriggers();
 }
 
+// This trigger will fire when the level spawns (or respawns if not fire once)
+// It will check a global state before firing.  It supports delay and killtargets
+
+#define SF_AUTO_FIREONCE		0x0001
+
+class CAutoTrigger : public CBaseEntity
+{
+	DECLARE_CLASS(CAutoTrigger, CBaseEntity);
+public:
+	void Spawn(void);
+	void Precache(void);
+	void Think(void);
+
+	int ObjectCaps(void) { return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	DECLARE_DATADESC();
+
+private:
+	int			m_globalstate;
+	USE_TYPE	triggerType;
+};
+LINK_ENTITY_TO_CLASS(trigger_auto, CAutoTrigger);
+
+BEGIN_DATADESC(CAutoTrigger)
+DEFINE_KEYFIELD( m_globalstate, FIELD_STRING, "globalstate"),
+DEFINE_OUTPUT( triggerType, "OnTrigger"),
+END_DATADESC()
+
+//Goldsrc era code. Not required???
+//IMPLEMENT_SAVERESTORE(CAutoTrigger, CBaseEntity);
+
+void CAutoTrigger::Spawn(void)
+{
+	Precache();
+}
+
+
+void CAutoTrigger::Precache(void)
+{
+	SetNextThink( gpGlobals->curtime + 0.1 );
+}
+
+
+void CAutoTrigger::Think(void)
+{
+	if (!m_globalstate || GlobalEntity_GetState(m_globalstate) == GLOBAL_ON)
+	{
+		//SUB_UseTargets(this, triggerType, 0);
+		if (m_spawnflags & SF_AUTO_FIREONCE)
+			UTIL_Remove(this);
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Removes anything that touches it. If the trigger has a targetname,
@@ -1408,6 +1466,17 @@ bool CChangeLevel::KeyValue( const char *szKeyName, const char *szValue )
 			Assert(0);
 		}
 		Q_strncpy(m_szMapName, szValue, sizeof(m_szMapName));
+#ifdef LUA_SDK
+		if (m_nTableReference == LUA_NOREF)
+		{
+			lua_newtable(L);
+			m_nTableReference = luaL_ref(L, LUA_REGISTRYINDEX);
+		}
+		lua_getref(L, m_nTableReference);
+		lua_pushstring(L, m_szMapName);
+		lua_setfield(L, -2, "m_szMapName");
+		lua_pop(L, 1);
+#endif
 	}
 	else if (FStrEq(szKeyName, "landmark"))
 	{
@@ -1418,6 +1487,17 @@ bool CChangeLevel::KeyValue( const char *szKeyName, const char *szValue )
 		}
 		
 		Q_strncpy(m_szLandmarkName, szValue, sizeof( m_szLandmarkName ));
+#ifdef LUA_SDK
+		if (m_nTableReference == LUA_NOREF)
+		{
+			lua_newtable(L);
+			m_nTableReference = luaL_ref(L, LUA_REGISTRYINDEX);
+		}
+		lua_getref(L, m_nTableReference);
+		lua_pushstring(L, m_szLandmarkName);
+		lua_setfield(L, -2, "m_szLandmarkName");
+		lua_pop(L, 1);
+#endif
 	}
 	else
 		return BaseClass::KeyValue( szKeyName, szValue );

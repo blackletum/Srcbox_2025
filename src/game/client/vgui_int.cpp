@@ -23,7 +23,11 @@
 #include <KeyValues.h>
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
-#include "MyPanel.h"
+//#include "MyPanel.h"
+#include "vgui2_panels/vgui_singeplayer.h"
+#include "vgui2_panels/vgui_friends.h"
+#include "vgui2_panels/vgui_newgame.h"
+#include "vgui2_panels/vgui_savenquit.h"
 #include "MountGames.h"
 
 //IGameMountPanel* gamemountpanel;
@@ -180,6 +184,11 @@ bool VGui_Startup( CreateInterfaceFn appSystemFactory )
 		return false; // c_vguiscreen.cpp needs this!
 	}
 
+#if defined( LUA_SDK )
+	// Create the root panel for our scripted GameUI state
+	VGUI_CreateGameUIRootPanel();
+#endif
+
 	VGui_OneTimeInit();
 
 	// Create any root panels for .dll
@@ -207,6 +216,9 @@ void VGui_CreateGlobalPanels( void )
 	VPANEL GameUiDll = enginevgui->GetPanel( PANEL_GAMEUIDLL);
 	// End
 	mypanel->Create(GameUiDll);
+	newgamedialog->Create(GameUiDll);
+	savebeforequitdialog->Create(GameUiDll);
+	quitquerybox->Create(GameUiDll);
 	//gamemountpanel->Create(GameUiDll);
 #if defined( TRACK_BLOCKING_IO )
 	VPANEL gameDLLPanel = enginevgui->GetPanel( PANEL_GAMEDLL );
@@ -259,10 +271,17 @@ void VGui_Shutdown()
 		g_pClientMode->VGui_Shutdown();
 	}
 
+#if defined( LUA_SDK )
+	VGUI_DestroyGameUIRootPanel();
+#endif
+
 	// Make sure anything "marked for deletion"
 	//  actually gets deleted before this dll goes away
 	vgui::ivgui()->RunFrame();
 	mypanel->Destroy();
+	newgamedialog->Destroy();
+	savebeforequitdialog->Destroy();
+	quitquerybox->Destroy();
 	//gamemountpanel->Destroy();
 }
 

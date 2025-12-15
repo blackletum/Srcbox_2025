@@ -22,6 +22,12 @@
 #include "gamestats.h"
 #include "ammodef.h"
 #include "NextBot.h"
+#ifdef LUA_SDK
+#include "luamanager.h"
+#include "lbaseentity_shared.h"
+#include "lhl2mp_player_shared.h"
+#include "ltakedamageinfo.h"
+#endif
 
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -213,7 +219,7 @@ void CHL2MP_Player::GiveAllItems( void )
 {
 	EquipSuit();
 
-	CBasePlayer::GiveAmmo( 255,	"Pistol");
+	CBasePlayer::GiveAmmo(255, "Pistol");
 	CBasePlayer::GiveAmmo( 255,	"AR2" );
 	CBasePlayer::GiveAmmo( 5,	"AR2AltFire" );
 	CBasePlayer::GiveAmmo( 255,	"SMG1");
@@ -250,13 +256,30 @@ void CHL2MP_Player::GiveAllItems( void )
 
 void CHL2MP_Player::GiveDefaultItems( void )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("GiveDefaultItems");
+	lua_pushhl2mpplayer(L, this);
+	END_LUA_CALL_HOOK(1, 0);
+#else
 	EquipSuit();
 
-	CBasePlayer::GiveAmmo( 255,	"Pistol");
+	/*CBasePlayer::GiveAmmo(255, "Pistol");
 	CBasePlayer::GiveAmmo( 45,	"SMG1");
 	CBasePlayer::GiveAmmo( 1,	"grenade" );
 	CBasePlayer::GiveAmmo( 6,	"Buckshot");
-	CBasePlayer::GiveAmmo( 6,	"357" );
+	CBasePlayer::GiveAmmo( 6,	"357" );*/
+
+	CBasePlayer::GiveAmmo(255, "Pistol");
+	CBasePlayer::GiveAmmo(255, "AR2");
+	CBasePlayer::GiveAmmo(5, "AR2AltFire");
+	CBasePlayer::GiveAmmo(255, "SMG1");
+	CBasePlayer::GiveAmmo(255, "Buckshot");
+	CBasePlayer::GiveAmmo(3, "smg1_grenade");
+	CBasePlayer::GiveAmmo(3, "rpg_round");
+	CBasePlayer::GiveAmmo(5, "grenade");
+	CBasePlayer::GiveAmmo(2, "slam");
+	CBasePlayer::GiveAmmo(32, "357");
+	CBasePlayer::GiveAmmo(16, "XBowBolt");
 
 	if ( GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER )
 	{
@@ -267,11 +290,25 @@ void CHL2MP_Player::GiveDefaultItems( void )
 		GiveNamedItem( "weapon_crowbar" );
 	}
 	
-	GiveNamedItem( "weapon_pistol" );
+	/*GiveNamedItem("weapon_pistol");
 	GiveNamedItem( "weapon_smg1" );
 	GiveNamedItem( "weapon_frag" );
 	GiveNamedItem( "weapon_physcannon" );
-	GiveNamedItem( "weapon_physgun");
+	GiveNamedItem( "weapon_physgun");*/
+
+	GiveNamedItem("weapon_smg1");
+	GiveNamedItem("weapon_frag");
+	GiveNamedItem("weapon_crowbar");
+	GiveNamedItem("weapon_pistol");
+	GiveNamedItem("weapon_ar2");
+	GiveNamedItem("weapon_shotgun");
+	GiveNamedItem("weapon_physcannon");
+	GiveNamedItem("weapon_bugbait");
+	GiveNamedItem("weapon_rpg");
+	GiveNamedItem("weapon_slam");
+	GiveNamedItem("weapon_357");
+	GiveNamedItem("weapon_crossbow");
+	GiveNamedItem("weapon_physgun");
 
 	const char *szDefaultWeaponName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_defaultweapon" );
 
@@ -279,12 +316,14 @@ void CHL2MP_Player::GiveDefaultItems( void )
 
 	if ( pDefaultWeapon )
 	{
-		Weapon_Switch( pDefaultWeapon );
+		//Weapon_Switch( pDefaultWeapon );
+		Weapon_Switch(Weapon_OwnsThisType("weapon_physgun"));
 	}
 	else
 	{
 		Weapon_Switch( Weapon_OwnsThisType( "weapon_physgun" ) );
 	}
+#endif
 }
 
 void CHL2MP_Player::PickDefaultSpawnTeam( void )
@@ -420,6 +459,16 @@ ConVar hl2mp_allow_pickup( "hl2mp_allow_pickup", "0", FCVAR_GAMEDLL );
 
 void CHL2MP_Player::PickupObject( CBaseEntity* pObject, bool bLimitMassAndSize )
 {
+#ifdef LUA_SDK
+	BEGIN_LUA_CALL_HOOK("PlayerPickupObject");
+	lua_pushhl2mpplayer(L, this);
+	lua_pushentity(L, pObject);
+	lua_pushboolean(L, bLimitMassAndSize);
+	END_LUA_CALL_HOOK(3, 1);
+
+	RETURN_LUA_NONE();
+#endif
+
 	if ( !hl2mp_allow_pickup.GetBool() )
 		return;
 
@@ -553,7 +602,8 @@ void CHL2MP_Player::SetPlayerModel( void )
 
 void CHL2MP_Player::SetupPlayerSoundsByModel( const char *pModelName )
 {
-	if ( Q_stristr( pModelName, "models/human") )
+	m_iPlayerSoundType = (int)PLAYER_SOUNDS_CITIZEN;
+	/*if (Q_stristr(pModelName, "models/human"))
 	{
 		m_iPlayerSoundType = (int)PLAYER_SOUNDS_CITIZEN;
 	}
@@ -564,7 +614,7 @@ void CHL2MP_Player::SetupPlayerSoundsByModel( const char *pModelName )
 	else if ( Q_stristr(pModelName, "combine" ) )
 	{
 		m_iPlayerSoundType = (int)PLAYER_SOUNDS_COMBINESOLDIER;
-	}
+	}*/
 }
 
 void CHL2MP_Player::ResetAnimation( void )
@@ -643,6 +693,12 @@ void CHL2MP_Player::PostThink( void )
 
 void CHL2MP_Player::PlayerDeathThink()
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("PlayerDeathThink");
+	lua_pushhl2mpplayer(L, this);
+	END_LUA_CALL_HOOK(1, 0);
+#endif
+
 	if( !IsObserver() )
 	{
 		BaseClass::PlayerDeathThink();
@@ -1098,6 +1154,15 @@ bool CHL2MP_Player::ClientCommand( const CCommand &args )
 
 void CHL2MP_Player::CheatImpulseCommands( int iImpulse )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("CheatImpulseCommands");
+	lua_pushhl2mpplayer(L, this);
+	lua_pushinteger(L, iImpulse);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_NONE();
+#endif
+
 	switch ( iImpulse )
 	{
 		case 101:
@@ -1401,6 +1466,17 @@ int CHL2MP_Player::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 void CHL2MP_Player::DeathSound( const CTakeDamageInfo &info )
 {
+#if defined ( LUA_SDK )
+	CTakeDamageInfo lInfo = info;
+
+	BEGIN_LUA_CALL_HOOK("PlayerDeathSound");
+	lua_pushhl2mpplayer(L, this);
+	lua_pushdamageinfo(L, lInfo);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_NONE();
+#endif
+
 	if ( m_hRagdoll && m_hRagdoll->GetBaseAnimating()->IsDissolving() )
 		 return;
 
@@ -1433,6 +1509,14 @@ void CHL2MP_Player::DeathSound( const CTakeDamageInfo &info )
 
 CBaseEntity* CHL2MP_Player::EntSelectSpawnPoint( void )
 {
+#ifdef LUA_SDK
+	BEGIN_LUA_CALL_HOOK("PlayerEntSelectSpawnPoint");
+	lua_pushhl2mpplayer(L, this);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_ENTITY();
+#endif
+
 	CBaseEntity *pSpot = NULL;
 	CBaseEntity *pLastSpawnPoint = g_pLastSpawn;
 	edict_t		*player = edict();

@@ -55,6 +55,12 @@
 #include "portal_player.h"
 #endif // PORTAL
 
+#ifdef LUA_SDK
+#include "luamanager.h"
+#include "lbasecombatweapon_shared.h"
+#include "lbaseplayer_shared.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -64,7 +70,7 @@
 
 extern ConVar weapon_showproficiency;
 extern ConVar autoaim_max_dist;
-static ConVar srcbox_flashlight_version("srcbox_flashlight_version", "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Select which flashlight from a version of Source (or Goldsource) to use. 1 is Half-Life's (Goldsource), 2 is Half-Life 2: Episode 2, and 3 is Left 4 Dead (2). Default is 0");
+static ConVar srcbox_flashlight_version("srcbox_flashlight_version", "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Select which flashlight from a version of Source (or Goldsource) to use. 1 is Half-Life's (Goldsource), 2 is Half-Life 2: Episode 2, and 3 is Left 4 Dead (2). Default is 0");
 
 // Do not touch with without seeing me, please! (sjb)
 // For consistency's sake, enemy gunfire is traced against a scaled down
@@ -2725,6 +2731,13 @@ bool CHL2_Player::Weapon_CanUse( CBaseCombatWeapon *pWeapon )
 //-----------------------------------------------------------------------------
 void CHL2_Player::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 {
+#if LUA_SDK
+	BEGIN_LUA_CALL_HOOK("Weapon_Equip");
+	lua_pushplayer(L, this);
+	lua_pushweapon(L, pWeapon);
+	END_LUA_CALL_HOOK(2, 0);
+#endif
+
 #if	HL2_SINGLE_PRIMARY_WEAPON_MODE
 
 	if ( pWeapon->GetSlot() == WEAPON_PRIMARY_SLOT )

@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -10,6 +10,21 @@
 #include "gameeventdefs.h"
 #include <KeyValues.h>
 #include "ammodef.h"
+
+#ifdef HL2SB
+#include "hl2_shareddefs.h"
+#endif
+
+#ifdef LUA_SDK
+#include "takedamageinfo.h"
+#include "luamanager.h"
+#include "lbasecombatweapon_shared.h"
+#include "lbaseentity_shared.h"
+#include "lbaseplayer_shared.h"
+#include "ltakedamageinfo.h"
+#include "mathlib/lvector.h"
+#endif
+
 
 #ifdef CLIENT_DLL
 	#include "c_hl2mp_player.h"
@@ -31,6 +46,9 @@
 	#include "weapon_hl2mpbasehlmpcombatweapon.h"
 	#include "team.h"
 	#include "voice_gamemgr.h"
+#ifdef HL2SB
+#include "globalstate.h"
+#endif
 	#include "hl2mp_gameinterface.h"
 	#include "hl2mp_cvars.h"
 
@@ -69,18 +87,18 @@ LINK_ENTITY_TO_CLASS( hl2mp_gamerules, CHL2MPGameRulesProxy );
 IMPLEMENT_NETWORKCLASS_ALIASED( HL2MPGameRulesProxy, DT_HL2MPGameRulesProxy )
 
 static HL2MPViewVectors g_HL2MPViewVectors(
-	Vector( 0, 0, 64 ),       //VEC_VIEW (m_vView) 
-							  
+	Vector( 0, 0, 64 ),       //VEC_VIEW (m_vView)
+
 	Vector(-16, -16, 0 ),	  //VEC_HULL_MIN (m_vHullMin)
 	Vector( 16,  16,  72 ),	  //VEC_HULL_MAX (m_vHullMax)
-							  					
+
 	Vector(-16, -16, 0 ),	  //VEC_DUCK_HULL_MIN (m_vDuckHullMin)
 	Vector( 16,  16,  36 ),	  //VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
 	Vector( 0, 0, 28 ),		  //VEC_DUCK_VIEW		(m_vDuckView)
-							  					
+
 	Vector(-10, -10, -10 ),	  //VEC_OBS_HULL_MIN	(m_vObsHullMin)
 	Vector( 10,  10,  10 ),	  //VEC_OBS_HULL_MAX	(m_vObsHullMax)
-							  					
+
 	Vector( 0, 0, 14 ),		  //VEC_DEAD_VIEWHEIGHT (m_vDeadViewHeight)
 
 	Vector(-16, -16, 0 ),	  //VEC_CROUCH_TRACE_MIN (m_vCrouchTraceMin)
@@ -163,6 +181,19 @@ static const char *s_PreserveEnts[] =
 	public:
 		virtual bool		CanPlayerHearPlayer( CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity )
 		{
+#if defined ( LUA_SDK )
+			BEGIN_LUA_CALL_HOOK("CanPlayerHearPlayer");
+			lua_pushplayer(L, pListener);
+			lua_pushplayer(L, pTalker);
+			lua_pushboolean(L, bProximity);
+			END_LUA_CALL_HOOK(3, 2);
+
+			if (lua_isboolean(L, -2))
+				bProximity = (bool)lua_toboolean(L, -2);
+			lua_remove(L, -2);
+
+			RETURN_LUA_BOOLEAN();
+#endif
 			return ( pListener->GetTeamNumber() == pTalker->GetTeamNumber() );
 		}
 	};
@@ -216,11 +247,11 @@ const HL2MPViewVectors* CHL2MPRules::GetHL2MPViewVectors()const
 {
 	return &g_HL2MPViewVectors;
 }
-	
+
 CHL2MPRules::~CHL2MPRules( void )
 {
 #ifndef CLIENT_DLL
-	// Note, don't delete each team since they are in the gEntList and will 
+	// Note, don't delete each team since they are in the gEntList and will
 	// automatically be deleted from there, instead.
 	g_Teams.Purge();
 #endif
@@ -228,6 +259,10 @@ CHL2MPRules::~CHL2MPRules( void )
 
 void CHL2MPRules::CreateStandardEntities( void )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("CreateStandardEntities");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
 
 #ifndef CLIENT_DLL
 	// Create the entity that will send our data to the client.
@@ -238,7 +273,7 @@ void CHL2MPRules::CreateStandardEntities( void )
 	g_pLastRebelSpawn = NULL;
 
 #ifdef DBGFLAG_ASSERT
-	CBaseEntity *pEnt = 
+	CBaseEntity *pEnt =
 #endif
 	CBaseEntity::Create( "hl2mp_gamerules", vec3_origin, vec3_angle );
 	Assert( pEnt );
@@ -251,6 +286,14 @@ void CHL2MPRules::CreateStandardEntities( void )
 //=========================================================
 float CHL2MPRules::FlWeaponRespawnTime( CBaseCombatWeapon *pWeapon )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("FlWeaponRespawnTime");
+	lua_pushweapon(L, pWeapon);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NUMBER();
+#endif
+
 #ifndef CLIENT_DLL
 	if ( weaponstay.GetInt() > 0 )
 	{
@@ -270,6 +313,13 @@ float CHL2MPRules::FlWeaponRespawnTime( CBaseCombatWeapon *pWeapon )
 
 bool CHL2MPRules::IsIntermission( void )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("IsIntermission");
+	END_LUA_CALL_HOOK(0, 1);
+
+	RETURN_LUA_BOOLEAN();
+#endif
+
 #ifndef CLIENT_DLL
 	return m_flIntermissionEndTime > gpGlobals->curtime;
 #endif
@@ -279,6 +329,15 @@ bool CHL2MPRules::IsIntermission( void )
 
 void CHL2MPRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &info )
 {
+#if defined ( LUA_SDK )
+	CTakeDamageInfo linfo = info;
+
+	BEGIN_LUA_CALL_HOOK("PlayerKilled");
+	lua_pushplayer(L, pVictim);
+	lua_pushdamageinfo(L, linfo);
+	END_LUA_CALL_HOOK(2, 0);
+#endif
+
 #ifndef CLIENT_DLL
 	if ( IsIntermission() )
 		return;
@@ -286,12 +345,144 @@ void CHL2MPRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 #endif
 }
 
+#ifndef CLIENT_DLL
+#if defined ( LUA_SDK )
+bool CHL2MPRules::FPlayerCanTakeDamage(CBasePlayer* pPlayer, CBaseEntity* pAttacker)
+{
+	BEGIN_LUA_CALL_HOOK("FPlayerCanTakeDamage");
+	lua_pushplayer(L, pPlayer);
+	lua_pushentity(L, pAttacker);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_BOOLEAN();
+
+	return BaseClass::FPlayerCanTakeDamage(pPlayer, pAttacker);
+}
+
+bool CHL2MPRules::AllowDamage(CBaseEntity* pVictim, const CTakeDamageInfo& info)
+{
+	CTakeDamageInfo lInfo = info;
+
+	BEGIN_LUA_CALL_HOOK("AllowDamage");
+	lua_pushentity(L, pVictim);
+	lua_pushdamageinfo(L, lInfo);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_BOOLEAN();
+
+	return BaseClass::AllowDamage(pVictim, lInfo);
+}
+#ifdef HL2SB
+//-----------------------------------------------------------------------------
+// Purpose: Whether or not the NPC should drop a health vial
+// Output : Returns true on success, false on failure.
+//-----------------------------------------------------------------------------
+bool CHL2MPRules::NPC_ShouldDropHealth(CBasePlayer* pRecipient)
+{
+	// Can only do this every so often
+	if (m_flLastHealthDropTime > gpGlobals->curtime)
+		return false;
+
+	//Try to throw dynamic health
+	float healthPerc = ((float)pRecipient->m_iHealth / (float)pRecipient->m_iMaxHealth);
+
+	if (random->RandomFloat(0.0f, 1.0f) > healthPerc * 1.5f)
+		return true;
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Whether or not the NPC should drop a health vial
+// Output : Returns true on success, false on failure.
+//-----------------------------------------------------------------------------
+bool CHL2MPRules::NPC_ShouldDropGrenade(CBasePlayer* pRecipient)
+{
+	// Can only do this every so often
+	if (m_flLastGrenadeDropTime > gpGlobals->curtime)
+		return false;
+
+	int grenadeIndex = GetAmmoDef()->Index("grenade");
+	int numGrenades = pRecipient->GetAmmoCount(grenadeIndex);
+
+	// If we're not maxed out on grenades and we've randomly okay'd it
+	if ((numGrenades < GetAmmoDef()->MaxCarry(grenadeIndex)) && (random->RandomInt(0, 2) == 0))
+		return true;
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Update the drop counter for health
+//-----------------------------------------------------------------------------
+void CHL2MPRules::NPC_DroppedHealth(void)
+{
+	m_flLastHealthDropTime = gpGlobals->curtime + sk_plr_health_drop_time.GetFloat();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Update the drop counter for grenades
+//-----------------------------------------------------------------------------
+void CHL2MPRules::NPC_DroppedGrenade(void)
+{
+	m_flLastGrenadeDropTime = gpGlobals->curtime + sk_plr_grenade_drop_time.GetFloat();
+}
+
+#endif
+
+void CHL2MPRules::PlayerThink(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("PlayerThink");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 0);
+
+	BaseClass::PlayerThink(pPlayer);
+}
+
+void CHL2MPRules::PlayerSpawn(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("PlayerSpawn");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NONE();
+
+	BaseClass::PlayerSpawn(pPlayer);
+}
+
+bool CHL2MPRules::FPlayerCanRespawn(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("FPlayerCanRespawn");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_BOOLEAN();
+
+	return BaseClass::FPlayerCanRespawn(pPlayer);
+}
+
+float CHL2MPRules::FlPlayerSpawnTime(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("FlPlayerSpawnTime");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NUMBER();
+
+	return BaseClass::FlPlayerSpawnTime(pPlayer);
+}
+#endif
+#endif
 
 void CHL2MPRules::Think( void )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("Think");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
 
 #ifndef CLIENT_DLL
-	
+
 	CGameRules::Think();
 
 	if ( g_fGameOver )   // someone else quit the game already
@@ -311,7 +502,7 @@ void CHL2MPRules::Think( void )
 
 //	float flTimeLimit = mp_timelimit.GetFloat() * 60;
 	float flFragLimit = fraglimit.GetFloat();
-	
+
 	if ( GetMapRemainingTime() < 0 )
 	{
 		GoToIntermission();
@@ -348,7 +539,7 @@ void CHL2MPRules::Think( void )
 	}
 
 	if ( gpGlobals->curtime > m_tmNextPeriodicThink )
-	{		
+	{
 		CheckAllPlayersReady();
 		CheckRestartGame();
 		m_tmNextPeriodicThink = gpGlobals->curtime + 1.0;
@@ -375,6 +566,11 @@ void CHL2MPRules::Think( void )
 
 void CHL2MPRules::GoToIntermission( void )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("GoToIntermission");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
+
 #ifndef CLIENT_DLL
 	if ( g_fGameOver )
 		return;
@@ -394,7 +590,7 @@ void CHL2MPRules::GoToIntermission( void )
 		pPlayer->AddFlag( FL_FROZEN );
 	}
 #endif
-	
+
 }
 
 bool CHL2MPRules::CheckGameOver()
@@ -405,7 +601,7 @@ bool CHL2MPRules::CheckGameOver()
 		// check to see if we should change levels now
 		if ( m_flIntermissionEndTime < gpGlobals->curtime )
 		{
-			ChangeLevel(); // intermission is over			
+			ChangeLevel(); // intermission is over
 		}
 
 		return true;
@@ -415,17 +611,25 @@ bool CHL2MPRules::CheckGameOver()
 	return false;
 }
 
-// when we are within this close to running out of entities,  items 
+// when we are within this close to running out of entities,  items
 // marked with the ITEM_FLAG_LIMITINWORLD will delay their respawn
 #define ENTITY_INTOLERANCE	100
 
 //=========================================================
-// FlWeaponRespawnTime - Returns 0 if the weapon can respawn 
+// FlWeaponRespawnTime - Returns 0 if the weapon can respawn
 // now,  otherwise it returns the time at which it can try
 // to spawn again.
 //=========================================================
 float CHL2MPRules::FlWeaponTryRespawn( CBaseCombatWeapon *pWeapon )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("FlWeaponTryRespawn");
+	lua_pushweapon(L, pWeapon);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NUMBER();
+#endif
+
 #ifndef CLIENT_DLL
 	if ( pWeapon && (pWeapon->GetWeaponFlags() & ITEM_FLAG_LIMITINWORLD) )
 	{
@@ -445,6 +649,14 @@ float CHL2MPRules::FlWeaponTryRespawn( CBaseCombatWeapon *pWeapon )
 //=========================================================
 Vector CHL2MPRules::VecWeaponRespawnSpot( CBaseCombatWeapon *pWeapon )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("VecWeaponRespawnSpot");
+	lua_pushweapon(L, pWeapon);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_VECTOR();
+#endif
+
 #ifndef CLIENT_DLL
 	CWeaponHL2MPBase *pHL2Weapon = dynamic_cast< CWeaponHL2MPBase*>( pWeapon );
 
@@ -453,7 +665,7 @@ Vector CHL2MPRules::VecWeaponRespawnSpot( CBaseCombatWeapon *pWeapon )
 		return pHL2Weapon->GetOriginalSpawnOrigin();
 	}
 #endif
-	
+
 	return pWeapon->GetAbsOrigin();
 }
 
@@ -475,14 +687,14 @@ bool GetObjectsOriginalParameters( CBaseEntity *pObject, Vector &vOriginalOrigin
 	{
 		if ( pItem->m_flNextResetCheckTime > gpGlobals->curtime )
 			 return false;
-		
+
 		vOriginalOrigin = pItem->GetOriginalSpawnOrigin();
 		vOriginalAngles = pItem->GetOriginalSpawnAngles();
 
 		pItem->m_flNextResetCheckTime = gpGlobals->curtime + sv_hl2mp_item_respawn_time.GetFloat();
 		return true;
 	}
-	else if ( CWeaponHL2MPBase *pWeapon = IsManagedObjectAWeapon( pObject )) 
+	else if ( CWeaponHL2MPBase *pWeapon = IsManagedObjectAWeapon( pObject ))
 	{
 		if ( pWeapon->m_flNextResetCheckTime > gpGlobals->curtime )
 			 return false;
@@ -506,7 +718,7 @@ void CHL2MPRules::ManageObjectRelocation( void )
 		for ( int i = 0; i < iTotal; i++ )
 		{
 			CBaseEntity *pObject = m_hRespawnableItemsAndWeapons[i].Get();
-			
+
 			if ( pObject )
 			{
 				Vector vSpawOrigin;
@@ -554,6 +766,14 @@ void CHL2MPRules::ManageObjectRelocation( void )
 //=========================================================
 void CHL2MPRules::AddLevelDesignerPlacedObject( CBaseEntity *pEntity )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("AddLevelDesignerPlacedObject");
+	lua_pushentity(L, pEntity);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NONE();
+#endif
+
 	if ( m_hRespawnableItemsAndWeapons.Find( pEntity ) == -1 )
 	{
 		m_hRespawnableItemsAndWeapons.AddToTail( pEntity );
@@ -565,6 +785,14 @@ void CHL2MPRules::AddLevelDesignerPlacedObject( CBaseEntity *pEntity )
 //=========================================================
 void CHL2MPRules::RemoveLevelDesignerPlacedObject( CBaseEntity *pEntity )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("RemoveLevelDesignerPlacedObject");
+	lua_pushentity(L, pEntity);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NONE();
+#endif
+
 	if ( m_hRespawnableItemsAndWeapons.Find( pEntity ) != -1 )
 	{
 		m_hRespawnableItemsAndWeapons.FindAndRemove( pEntity );
@@ -577,6 +805,14 @@ void CHL2MPRules::RemoveLevelDesignerPlacedObject( CBaseEntity *pEntity )
 //=========================================================
 Vector CHL2MPRules::VecItemRespawnSpot( CItem *pItem )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("VecItemRespawnSpot");
+	lua_pushentity(L, pItem);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_VECTOR();
+#endif
+
 	return pItem->GetOriginalSpawnOrigin();
 }
 
@@ -585,6 +821,14 @@ Vector CHL2MPRules::VecItemRespawnSpot( CItem *pItem )
 //=========================================================
 QAngle CHL2MPRules::VecItemRespawnAngles( CItem *pItem )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("VecItemRespawnAngles");
+	lua_pushentity(L, pItem);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_ANGLE();
+#endif
+
 	return pItem->GetOriginalSpawnAngles();
 }
 
@@ -593,8 +837,41 @@ QAngle CHL2MPRules::VecItemRespawnAngles( CItem *pItem )
 //=========================================================
 float CHL2MPRules::FlItemRespawnTime( CItem *pItem )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("FlItemRespawnTime");
+	lua_pushentity(L, pItem);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NUMBER();
+#endif
+
 	return sv_hl2mp_item_respawn_time.GetFloat();
 }
+
+#if defined ( LUA_SDK )
+//=========================================================
+//=========================================================
+void CHL2MPRules::PlayerGotItem(CBasePlayer* pPlayer, CItem* pItem)
+{
+	BEGIN_LUA_CALL_HOOK("PlayerGotItem");
+	lua_pushentity(L, pPlayer);
+	lua_pushentity(L, pItem);
+	END_LUA_CALL_HOOK(2, 0);
+}
+
+//=========================================================
+//=========================================================
+int CHL2MPRules::ItemShouldRespawn(CItem* pItem)
+{
+	BEGIN_LUA_CALL_HOOK("ItemShouldRespawn");
+	lua_pushentity(L, pItem);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_INTEGER();
+
+	return BaseClass::ItemShouldRespawn(pItem);
+}
+#endif
 
 
 //=========================================================
@@ -603,11 +880,20 @@ float CHL2MPRules::FlItemRespawnTime( CItem *pItem )
 //=========================================================
 bool CHL2MPRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBaseCombatWeapon *pItem )
 {
+#if !defined ( LUA_SDK )
 	if ( weaponstay.GetInt() > 0 )
 	{
 		if ( pPlayer->Weapon_OwnsThisType( pItem->GetClassname(), pItem->GetSubType() ) )
 			 return false;
 	}
+#else
+	BEGIN_LUA_CALL_HOOK("CanHavePlayerItem");
+	lua_pushplayer(L, pPlayer);
+	lua_pushweapon(L, pItem);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_BOOLEAN();
+#endif
 
 	return BaseClass::CanHavePlayerItem( pPlayer, pItem );
 }
@@ -620,6 +906,14 @@ bool CHL2MPRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBaseCombatWeapon *pI
 //=========================================================
 int CHL2MPRules::WeaponShouldRespawn( CBaseCombatWeapon *pWeapon )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("WeaponShouldRespawn");
+	lua_pushweapon(L, pWeapon);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_INTEGER();
+#endif
+
 #ifndef CLIENT_DLL
 	if ( pWeapon->HasSpawnFlags( SF_NORESPAWN ) )
 	{
@@ -636,6 +930,13 @@ int CHL2MPRules::WeaponShouldRespawn( CBaseCombatWeapon *pWeapon )
 void CHL2MPRules::ClientDisconnected( edict_t *pClient )
 {
 #ifndef CLIENT_DLL
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("ClientDisconnected");
+	lua_pushplayer(L, (CBasePlayer*)CBaseEntity::Instance(pClient));
+	END_LUA_CALL_HOOK(1, 0);
+#endif
+
+#ifndef CLIENT_DLL
 	// Msg( "CLIENT DISCONNECTED, REMOVING FROM TEAM.\n" );
 
 	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance( pClient );
@@ -651,32 +952,86 @@ void CHL2MPRules::ClientDisconnected( edict_t *pClient )
 	BaseClass::ClientDisconnected( pClient );
 
 #endif
+#endif
 }
+
+#ifndef CLIENT_DLL
+#if defined ( LUA_SDK )
+float CHL2MPRules::FlPlayerFallDamage(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("FlPlayerFallDamage");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 1);
+
+	RETURN_LUA_NUMBER();
+
+	return BaseClass::FlPlayerFallDamage(pPlayer);
+}
+#endif
+#endif
 
 
 //=========================================================
-// Deathnotice. 
+// Deathnotice.
 //=========================================================
 void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info )
 {
+#if defined ( LUA_SDK )
+	CTakeDamageInfo lInfo = info;
+
+	BEGIN_LUA_CALL_HOOK("DeathNotice");
+	lua_pushplayer(L, pVictim);
+	lua_pushdamageinfo(L, lInfo);
+	END_LUA_CALL_HOOK(2, 0);
+#endif
+
 #ifndef CLIENT_DLL
 	// Work out what killed the player, and send a message to all clients about it
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_ID = 0;
+#if defined ( LUA_SDK )
+	const char* killer_class_name = "class C_World";		// by default, the player is killed by the world
+	const char* weapon_class_name = NULL;
+#endif
 
 	// Find the killer & the scorer
-	CBaseEntity *pInflictor = info.GetInflictor();
-	CBaseEntity *pKiller = info.GetAttacker();
-	CBasePlayer *pScorer = GetDeathScorer( pKiller, pInflictor );
+#if defined ( LUA_SDK )
+	CBaseEntity* pInflictor = lInfo.GetInflictor();
+	CBaseEntity* pKiller = lInfo.GetAttacker();
+#else
+	CBaseEntity* pInflictor = info.GetInflictor();
+	CBaseEntity* pKiller = info.GetAttacker();
+#endif
+	CBasePlayer* pScorer = GetDeathScorer(pKiller, pInflictor);
 
 	// Custom kill type?
-	if ( info.GetDamageCustom() )
+#if defined ( LUA_SDK )
+	if (lInfo.GetDamageCustom())
 	{
-		killer_weapon_name = GetDamageCustomString( info );
+		killer_weapon_name = GetDamageCustomString(lInfo);
+		killer_class_name = pKiller->GetClassname();
+		weapon_class_name = pInflictor->GetClassname();
+#else
+	if (info.GetDamageCustom())
+	{
+		killer_weapon_name = GetDamageCustomString(info);
+#endif
 		if ( pScorer )
 		{
 			killer_ID = pScorer->GetUserID();
 		}
+#ifdef LUA_SDK
+		if (!Q_strcmp(killer_class_name, weapon_class_name))
+		{
+			// If the inflictor is the killer,  then it must be their current weapon doing the damage
+			CAI_BaseNPC* pNPC = pKiller->MyNPCPointer();
+			if (pNPC && pNPC->GetActiveWeapon())
+			{
+				killer_weapon_name = pNPC->GetActiveWeapon()->GetClassname();
+				weapon_class_name = pNPC->GetActiveWeapon()->GetClassname();
+			}
+		}
+#endif
 	}
 	else
 	{
@@ -684,7 +1039,7 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 		if ( pScorer )
 		{
 			killer_ID = pScorer->GetUserID();
-			
+
 			if ( pInflictor )
 			{
 				if ( pInflictor == pScorer )
@@ -704,6 +1059,21 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 		else
 		{
 			killer_weapon_name = pInflictor->GetClassname();
+#ifdef LUA_SDK
+			killer_class_name = pKiller->GetClassname();
+			weapon_class_name = pInflictor->GetClassname();
+
+			if (!Q_strcmp(killer_class_name, weapon_class_name))
+			{
+				// If the inflictor is the killer,  then it must be their current weapon doing the damage
+				CAI_BaseNPC* pNPC = pKiller->MyNPCPointer();
+				if (pNPC && pNPC->GetActiveWeapon())
+				{
+					killer_weapon_name = pNPC->GetActiveWeapon()->GetClassname();
+					weapon_class_name = pNPC->GetActiveWeapon()->GetClassname();
+				}
+			}
+#endif
 		}
 
 		// strip the NPC_* or weapon_* from the inflictor's classname
@@ -745,7 +1115,13 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 	{
 		event->SetInt("userid", pVictim->GetUserID() );
 		event->SetInt("attacker", killer_ID );
+#ifdef LUA_SDK
+		event->SetString("attackername", killer_class_name);
+#endif
 		event->SetString("weapon", killer_weapon_name );
+#ifdef LUA_SDK
+		event->SetString("weaponname", weapon_class_name);
+#endif
 		event->SetInt( "priority", 7 );
 		gameeventmanager->FireEvent( event );
 	}
@@ -755,8 +1131,14 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 
 void CHL2MPRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("ClientSettingsChanged");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 0);
+#endif
+
 #ifndef CLIENT_DLL
-	
+
 	CHL2MP_Player *pHL2Player = ToHL2MPPlayer( pPlayer );
 
 	if ( pHL2Player == NULL )
@@ -813,11 +1195,20 @@ void CHL2MPRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 
 	BaseClass::ClientSettingsChanged( pPlayer );
 #endif
-	
+
 }
 
 int CHL2MPRules::PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("PlayerRelationship");
+	lua_pushentity(L, pPlayer);
+	lua_pushentity(L, pTarget);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_INTEGER();
+#endif
+
 #ifndef CLIENT_DLL
 	// half life multiplay has a simple concept of Player Relationships.
 	// you are either on another player's team, or you are not.
@@ -833,24 +1224,84 @@ int CHL2MPRules::PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget 
 	return GR_NOTTEAMMATE;
 }
 
-const char *CHL2MPRules::GetGameDescription( void )
-{ 
-	if ( IsTeamplay() )
-		return "Team Deathmatch"; 
+#ifndef CLIENT_DLL
+#if defined ( LUA_SDK )
+bool CHL2MPRules::PlayerCanHearChat(CBasePlayer* pListener, CBasePlayer* pSpeaker)
+{
+	BEGIN_LUA_CALL_HOOK("PlayerCanHearChat");
+	lua_pushplayer(L, pListener);
+	lua_pushplayer(L, pSpeaker);
+	END_LUA_CALL_HOOK(2, 1);
 
+	RETURN_LUA_BOOLEAN();
+
+	return BaseClass::PlayerCanHearChat(pListener, pSpeaker);
+}
+
+bool CHL2MPRules::ClientConnected(edict_t* pEntity, const char* pszName, const char* pszAddress, char* reject, int maxrejectlen)
+{
+	BEGIN_LUA_CALL_HOOK("ClientConnected");
+	lua_pushplayer(L, (CBasePlayer*)CBaseEntity::Instance(pEntity));
+	lua_pushstring(L, pszName);
+	lua_pushstring(L, pszAddress);
+	lua_pushstring(L, reject);
+	lua_pushinteger(L, maxrejectlen);
+	END_LUA_CALL_HOOK(5, 1);
+
+	RETURN_LUA_BOOLEAN();
+
+	return BaseClass::ClientConnected(pEntity, pszName, pszAddress, reject, maxrejectlen);
+}
+
+void CHL2MPRules::InitHUD(CBasePlayer* pPlayer)
+{
+	BEGIN_LUA_CALL_HOOK("InitHUD");
+	lua_pushplayer(L, pPlayer);
+	END_LUA_CALL_HOOK(1, 0);
+
+	BaseClass::InitHUD(pPlayer);
+}
+
+
+#endif
+#endif
+
+const char *CHL2MPRules::GetGameDescription( void )
+{
+#if !defined ( LUA_SDK )
+	if ( IsTeamplay() )
+		return "Team Deathmatch";
+#else
+	BEGIN_LUA_CALL_HOOK("GetGameDescription");
+	END_LUA_CALL_HOOK(0, 1);
+
+	RETURN_LUA_STRING();
+#endif
+
+#if !defined( HL2SB )
 	return "Deathmatch"; 
-} 
+#else
+	return "Half-Life 2 Sandbox";
+#endif
+}
 
 bool CHL2MPRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
 {
 	return true;
 }
- 
+
 float CHL2MPRules::GetMapRemainingTime()
 {
+#if !defined ( LUA_SDK )
 	// if timelimit is disabled, return 0
 	if ( mp_timelimit.GetInt() <= 0 )
 		return 0;
+#else
+	BEGIN_LUA_CALL_HOOK("GetMapRemainingTime");
+	END_LUA_CALL_HOOK(0, 1);
+
+	RETURN_LUA_NUMBER();
+#endif
 
 	// timelimit is in minutes
 
@@ -860,16 +1311,21 @@ float CHL2MPRules::GetMapRemainingTime()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CHL2MPRules::Precache( void )
 {
+#if !defined ( LUA_SDK )
 	CBaseEntity::PrecacheScriptSound( "AlyxEmp.Charge" );
+#else
+	BEGIN_LUA_CALL_HOOK("Precache");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
 }
 
 #ifdef GAME_DLL
 bool CHL2MPRules::IsOfficialMap( void )
-{ 
+{
 	static const char *s_OfficialMaps[] =
 	{
 		"devtest",
@@ -900,6 +1356,15 @@ bool CHL2MPRules::IsOfficialMap( void )
 
 bool CHL2MPRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("ShouldCollide");
+	lua_pushinteger(L, collisionGroup0);
+	lua_pushinteger(L, collisionGroup1);
+	END_LUA_CALL_HOOK(2, 1);
+
+	RETURN_LUA_BOOLEAN();
+#endif
+
 	if ( collisionGroup0 > collisionGroup1 )
 	{
 		// swap so that lowest is always first
@@ -912,7 +1377,7 @@ bool CHL2MPRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 		return false;
 	}
 
-	return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
+	return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 );
 
 }
 
@@ -947,7 +1412,7 @@ CAmmoDef *GetAmmoDef()
 {
 	static CAmmoDef def;
 	static bool bInitted = false;
-	
+
 	if ( !bInitted )
 	{
 		bInitted = true;
@@ -978,8 +1443,47 @@ CAmmoDef *GetAmmoDef()
 
 #else
 
+#if defined( DEBUG ) || defined( LUA_SDK )
+
+// Handler for the "bot" command.
+void Bot_f()
+{
+	// Look at -count.
+	int count = 1;
+	count = clamp(count, 1, 16);
+
+	int iTeam = TEAM_COMBINE;
+
+	// Look at -frozen.
+	bool bFrozen = false;
+
+	// Ok, spawn all the bots.
+	while (--count >= 0)
+	{
+		BotPutInServer(bFrozen, iTeam);
+	}
+}
+
+
+#ifndef LUA_SDK
+ConCommand cc_Bot("bot", Bot_f, "Add a bot.", FCVAR_CHEAT);
+#else
+ConCommand cc_Bot("bot", Bot_f, "Add a bot.");
+#endif
+
+#endif
+
 	bool CHL2MPRules::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBaseCombatWeapon *pWeapon )
-	{		
+	{
+#if defined ( LUA_SDK )
+		BEGIN_LUA_CALL_HOOK("FShouldSwitchWeapon");
+		lua_pushplayer(L, pPlayer);
+		lua_pushweapon(L, pWeapon);
+		END_LUA_CALL_HOOK(2, 1);
+
+		RETURN_LUA_BOOLEAN();
+#endif
+
 		if ( pPlayer->GetActiveWeapon() && pPlayer->IsNetClient() )
 		{
 			// Player has an active item, so let's check cl_autowepswitch.
@@ -999,6 +1503,11 @@ CAmmoDef *GetAmmoDef()
 
 void CHL2MPRules::RestartGame()
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("RestartGame");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
+
 	// bounds check
 	if ( mp_timelimit.GetInt() < 0 )
 	{
@@ -1012,7 +1521,7 @@ void CHL2MPRules::RestartGame()
 	}
 
 	CleanUpMap();
-	
+
 	// now respawn all players
 	for (int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
@@ -1046,7 +1555,7 @@ void CHL2MPRules::RestartGame()
 	}
 
 	m_flIntermissionEndTime = 0;
-	m_flRestartGameTime = 0.0;		
+	m_flRestartGameTime = 0.0;
 	m_bCompleteReset = false;
 
 	IGameEvent * event = gameeventmanager->CreateEvent( "round_start" );
@@ -1128,7 +1637,7 @@ void CHL2MPRules::CleanUpMap()
 		{
 			if ( m_iIterator == g_MapEntityRefs.InvalidIndex() )
 			{
-				// This shouldn't be possible. When we loaded the map, it should have used 
+				// This shouldn't be possible. When we loaded the map, it should have used
 				// CCSMapLoadEntityFilter, which should have built the g_MapEntityRefs list
 				// with the same list of entities we're referring to here.
 				Assert( false );
@@ -1147,7 +1656,7 @@ void CHL2MPRules::CleanUpMap()
 				}
 				else
 				{
-					// Cool, the slot where this entity was is free again (most likely, the entity was 
+					// Cool, the slot where this entity was is free again (most likely, the entity was
 					// freed above). Now create an entity with this specific index.
 					return CreateEntityByName( pClassname, ref.m_iEdict );
 				}
@@ -1163,16 +1672,28 @@ void CHL2MPRules::CleanUpMap()
 	// DO NOT CALL SPAWN ON info_node ENTITIES!
 
 	MapEntity_ParseAllEntities( engine->GetMapEntitiesString(), &filter, true );
+
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("CleanUpMap");
+	END_LUA_CALL_HOOK(0, 0);
+#endif
 }
 
 void CHL2MPRules::CheckChatForReadySignal( CHL2MP_Player *pPlayer, const char *chatmsg )
 {
+#if defined ( LUA_SDK )
+	BEGIN_LUA_CALL_HOOK("CheckChatForReadySignal");
+	lua_pushplayer(L, pPlayer);
+	lua_pushstring(L, chatmsg);
+	END_LUA_CALL_HOOK(2, 0);
+#endif
+
 	if( m_bAwaitingReadyRestart && FStrEq( chatmsg, mp_ready_signal.GetString() ) )
 	{
 		if( !pPlayer->IsReady() )
 		{
 			pPlayer->SetReady( true );
-		}		
+		}
 	}
 }
 
@@ -1202,7 +1723,7 @@ void CHL2MPRules::CheckRestartGame( void )
 	{
 		m_bAwaitingReadyRestart = true;
 		m_bHeardAllPlayersReady = false;
-		
+
 
 		const char *pszReadyString = mp_ready_signal.GetString();
 
@@ -1239,7 +1760,7 @@ void CHL2MPRules::CheckAllPlayersReady( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 const char *CHL2MPRules::GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer )
 {
@@ -1275,7 +1796,7 @@ const char *CHL2MPRules::GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer )
 	{
 		if ( pPlayer->GetTeamNumber() != TEAM_SPECTATOR )
 		{
-			pszFormat = "HL2MP_Chat_All";	
+			pszFormat = "HL2MP_Chat_All";
 		}
 		else
 		{

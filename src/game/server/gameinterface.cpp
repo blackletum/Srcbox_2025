@@ -116,11 +116,11 @@ extern ConVar tf_mm_servermode;
 #include "econ_item_system.h"
 #endif // USES_ECON_ITEMS
 
-//#ifdef LUA_SDK
+#ifdef LUA_SDK
 #include "luamanager.h"
 #include "luacachefile.h"
 //#include "mountaddons.h"
-//#endif
+#endif
 
 #ifdef HL2SB
 #include "mountsteamcontent.h"

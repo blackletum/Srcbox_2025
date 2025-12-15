@@ -7,14 +7,16 @@
 #include "cbase.h"
 #include "vgui_int.h"
 #include "ienginevgui.h"
+#ifdef LUA_SDK
 #include "vgui/IVgui.h"
 #include "vgui_rootpanel_hl2.h"
 #include "clientmode_shared.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//#ifdef LUA_SDK
+#ifdef LUA_SDK
 C_ScriptedBaseGameUIPanel* g_pScriptedBaseGameUIPanel = NULL;
 
 
@@ -34,7 +36,7 @@ void VGUI_DestroyGameUIRootPanel(void)
 	delete g_pScriptedBaseGameUIPanel;
 	g_pScriptedBaseGameUIPanel = NULL;
 }
-//#endif
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -61,7 +63,7 @@ vgui::VPANEL VGui_GetClientDLLRootPanel( void )
 	return root;
 }
 
-//#ifdef LUA_SDK
+#ifdef LUA_SDK
 vgui::Panel* VGui_GetGameUIPanel(void)
 {
 	return g_pScriptedBaseGameUIPanel;
@@ -77,27 +79,26 @@ vgui::Panel* VGui_GetClientLuaRootPanel(void)
 	vgui::Panel* pRoot = mode->m_pClientLuaPanel;
 	return pRoot;
 }
-//#endif
 
 //-----------------------------------------------------------------------------
 // C_ScriptedBaseGameUIPanel implementation.
 //-----------------------------------------------------------------------------
-C_ScriptedBaseGameUIPanel::C_ScriptedBaseGameUIPanel(vgui::VPANEL parent)
-	: BaseClass(NULL, "ScriptedBaseGameUIPanel")
+C_ScriptedBaseGameUIPanel::C_ScriptedBaseGameUIPanel( vgui::VPANEL parent )
+	: BaseClass( NULL, "ScriptedBaseGameUIPanel" )
 {
-	SetParent(parent);
-	SetPaintEnabled(false);
-	SetPaintBorderEnabled(false);
-	SetPaintBackgroundEnabled(false);
+	SetParent( parent );
+	SetPaintEnabled( false );
+	SetPaintBorderEnabled( false );
+	SetPaintBackgroundEnabled( false );
 
 	// This panel does post child painting
-	SetPostChildPaintEnabled(true);
+	SetPostChildPaintEnabled( true );
 
 	// Make it screen sized
-	SetBounds(0, 0, ScreenWidth(), ScreenHeight());
+	SetBounds( 0, 0, ScreenWidth(), ScreenHeight() );
 
 	// Ask for OnTick messages
-	vgui::ivgui()->AddTickSignal(GetVPanel());
+	vgui::ivgui()->AddTickSignal( GetVPanel() );
 }
 
 //-----------------------------------------------------------------------------
@@ -146,4 +147,4 @@ void C_ScriptedBaseGameUIPanel::LevelInit(void)
 void C_ScriptedBaseGameUIPanel::LevelShutdown(void)
 {
 }
-
+#endif
