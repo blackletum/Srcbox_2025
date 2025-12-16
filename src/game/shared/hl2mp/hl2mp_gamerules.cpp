@@ -372,7 +372,7 @@ bool CHL2MPRules::AllowDamage(CBaseEntity* pVictim, const CTakeDamageInfo& info)
 
 	return BaseClass::AllowDamage(pVictim, lInfo);
 }
-#ifdef HL2SB
+//#ifdef HL2SB
 //-----------------------------------------------------------------------------
 // Purpose: Whether or not the NPC should drop a health vial
 // Output : Returns true on success, false on failure.
@@ -472,7 +472,7 @@ float CHL2MPRules::FlPlayerSpawnTime(CBasePlayer* pPlayer)
 	return BaseClass::FlPlayerSpawnTime(pPlayer);
 }
 #endif
-#endif
+//#endif
 
 void CHL2MPRules::Think( void )
 {
@@ -1021,7 +1021,7 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 			killer_ID = pScorer->GetUserID();
 		}
 #ifdef LUA_SDK
-		if (!Q_strcmp(killer_class_name, weapon_class_name))
+		/*if (!Q_strcmp(killer_class_name, weapon_class_name))
 		{
 			// If the inflictor is the killer,  then it must be their current weapon doing the damage
 			CAI_BaseNPC* pNPC = pKiller->MyNPCPointer();
@@ -1030,7 +1030,7 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 				killer_weapon_name = pNPC->GetActiveWeapon()->GetClassname();
 				weapon_class_name = pNPC->GetActiveWeapon()->GetClassname();
 			}
-		}
+		}*/
 #endif
 	}
 	else
@@ -1063,7 +1063,7 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 			killer_class_name = pKiller->GetClassname();
 			weapon_class_name = pInflictor->GetClassname();
 
-			if (!Q_strcmp(killer_class_name, weapon_class_name))
+			/*if (!Q_strcmp(killer_class_name, weapon_class_name))
 			{
 				// If the inflictor is the killer,  then it must be their current weapon doing the damage
 				CAI_BaseNPC* pNPC = pKiller->MyNPCPointer();
@@ -1072,7 +1072,7 @@ void CHL2MPRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &info
 					killer_weapon_name = pNPC->GetActiveWeapon()->GetClassname();
 					weapon_class_name = pNPC->GetActiveWeapon()->GetClassname();
 				}
-			}
+			}*/
 #endif
 		}
 
@@ -1460,7 +1460,8 @@ void Bot_f()
 	// Ok, spawn all the bots.
 	while (--count >= 0)
 	{
-		BotPutInServer(bFrozen, iTeam);
+		// SDK differences
+		//BotPutInServer(bFrozen, iTeam);
 	}
 }
 
