@@ -110,8 +110,6 @@ public:
 	}
 
 #ifndef CLIENT_DLL
-	virtual void FrameUpdatePostEntityThink();
-
 #endif
 #ifdef LUA_SDK
 	// GR_Think
