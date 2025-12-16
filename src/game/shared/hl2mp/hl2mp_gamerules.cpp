@@ -174,6 +174,11 @@ static const char *s_PreserveEnts[] =
 	END_SEND_TABLE()
 #endif
 
+#ifdef SRCBOX
+	extern ConVar	sk_plr_health_drop_time;
+	extern ConVar	sk_plr_grenade_drop_time;
+#endif
+
 #ifndef CLIENT_DLL
 
 	class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
@@ -347,7 +352,7 @@ void CHL2MPRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 
 #ifndef CLIENT_DLL
 #if defined ( LUA_SDK )
-bool CHL2MPRules::FPlayerCanTakeDamage(CBasePlayer* pPlayer, CBaseEntity* pAttacker)
+bool CHL2MPRules::FPlayerCanTakeDamage(CBasePlayer* pPlayer, CBaseEntity* pAttacker, const CTakeDamageInfo& info)
 {
 	BEGIN_LUA_CALL_HOOK("FPlayerCanTakeDamage");
 	lua_pushplayer(L, pPlayer);
@@ -356,7 +361,7 @@ bool CHL2MPRules::FPlayerCanTakeDamage(CBasePlayer* pPlayer, CBaseEntity* pAttac
 
 	RETURN_LUA_BOOLEAN();
 
-	return BaseClass::FPlayerCanTakeDamage(pPlayer, pAttacker);
+	return BaseClass::FPlayerCanTakeDamage(pPlayer, pAttacker, info);
 }
 
 bool CHL2MPRules::AllowDamage(CBaseEntity* pVictim, const CTakeDamageInfo& info)
