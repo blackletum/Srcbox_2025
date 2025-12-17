@@ -23,6 +23,7 @@ ARGG is used by Half-Life 2: Sandbox to implement rotational functionality for t
 https://github.com/Planimeter/hl2sb-src
 
 Some code for Srcbox (lua, physgun implantetion) have been ported and updated for the modern SDK, from the most recent branch, and the original 2007 code.
+The lua dll that is compatible with this mod can be found here (x64) https://sourceforge.net/projects/luabinaries/files/5.1.5/Windows%20Libraries/Dynamic/ (lua-5.1.5_Win64_dll17_lib.zip)
 
 <img width="88" height="31" alt="lux_icon" src="https://github.com/user-attachments/assets/b355ca87-8beb-4f63-a75f-43653f79c810" />
 
