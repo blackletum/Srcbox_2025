@@ -108,24 +108,12 @@ public:
 
 		return BaseClass::ShouldDrawHeadLabels();
 	}
-
-#ifndef CLIENT_DLL
-#endif
-#ifdef LUA_SDK
-#ifdef GAME_DLL
-	virtual void FrameUpdatePostEntityThink();
-	// GR_Think
+#ifdef CLIENT_DLL
 	virtual void Think(void);
 #endif
-#else
 #ifndef CLIENT_DLL
 	virtual void FrameUpdatePostEntityThink();
-
-	// GR_Think
 	virtual void Think(void);
-#endif
-#endif
-#ifndef CLIENT_DLL
 	virtual void RefreshSkillData( bool forceUpdate );
 	virtual bool IsAllowedToSpawn( CBaseEntity *pEntity );
 	virtual bool FAllowFlashlight( void );
