@@ -15,6 +15,11 @@ $Include "$SRCDIR\game\client\client_base.vpc"
 //-----------------------------------------
 $Include "$SRCDIR\game\client\client_gameui_hl2mp.vpc"
 
+//-----------------------------------------
+// LUA from Half-Life 2: Sandbox
+//-----------------------------------------
+$Include "$SRCDIR\game\client\client_lua.vpc"
+
 $Configuration
 {
 	$Compiler

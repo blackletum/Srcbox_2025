@@ -1,0 +1,95 @@
+//-----------------------------------------------------------------------------
+//	SERVER_LUA.VPC
+//
+//	Project Base Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE"
+		$PreprocessorDefinitions		"$BASE;LUA_SDK"
+	}
+}
+
+$Project
+{
+    $Folder	"Source Files"
+    {
+		$Folder	"Lua"
+		{
+            $File "$SRCDIR\game\shared\basescripted.cpp"
+            $File "$SRCDIR\game\shared\basescripted.h"
+            $File "$SRCDIR\game\server\basescriptedtrigger.cpp"
+            $File "$SRCDIR\game\server\basescriptedtrigger.h"
+		    $File "$SRCDIR\game\shared\lbasecombatweapon_shared.cpp"
+		    $File "$SRCDIR\game\shared\lbasecombatweapon_shared.h"
+            $File "$SRCDIR\game\shared\lbaseentity_shared.cpp"
+            $File "$SRCDIR\game\shared\lbaseentity_shared.h"
+            $File "$SRCDIR\game\shared\lbaseplayer_shared.cpp"
+            $File "$SRCDIR\game\shared\lbaseplayer_shared.h"
+            $File "$SRCDIR\public\lbspflags.cpp"
+            $File "lbaseentity.cpp"
+            $File "lbaseentity.h"
+            $File "lbaseanimating.cpp"
+            $File "lbaseanimating.cpp"
+            $File "$SRCDIR\public\lColor.cpp"
+            $File "$SRCDIR\public\tier1\lconvar.cpp"
+            $File "$SRCDIR\public\tier0\ldbg.cpp"
+		    $File "$SRCDIR\game\shared\leffect_dispatch_data.cpp"
+		    $File "$SRCDIR\public\leiface.cpp"
+		    $File "lentitylist.cpp"
+		    $File "$SRCDIR\public\lfilesystem.cpp"
+		    $File "$SRCDIR\public\lgametrace.cpp"
+		    $File "$SRCDIR\public\lglobalvars_base.cpp"
+		    $File "$SRCDIR\public\tier1\liconvar.cpp"
+		    $File "$SRCDIR\public\licvar.cpp"
+		    $File "$SRCDIR\public\materialsystem\limaterial.cpp"
+            $File "$SRCDIR\game\shared\limovehelper.cpp"
+            $File "$SRCDIR\game\shared\lin_buttons.cpp"
+            $File "$SRCDIR\public\linetchannelinfo.cpp"
+            $File "$SRCDIR\game\shared\lipredictionsystem.cpp"
+            $File "$SRCDIR\public\SoundEmitterSystem\lisoundemittersystembase.cpp"
+            $File "$SRCDIR\public\steam\listeamfriends.cpp"
+            $File "$SRCDIR\public\steam\listeamfriends.h"
+            $File "$SRCDIR\public\engine\livdebugoverlay.cpp"
+            $File "$SRCDIR\public\tier1\LKeyValues.cpp"
+            $File "$SRCDIR\public\mathlib\lmathlib.cpp"
+            $File "$SRCDIR\public\lnetworkstringtabledefs.cpp"
+            $File "$SRCDIR\public\lnetworkstringtabledefs.h"
+            $File "$SRCDIR\public\vphysics\lperformance.cpp"
+            $File "$SRCDIR\public\vphysics\lperformance.h"
+            $File "lplayer.cpp"
+            $File "lrecipientfilter.cpp"
+            $File "lrecipientfilter.h"
+            $File "$SRCDIR\public\vstdlib\lrandom.cpp"
+            $File "$SRCDIR\game\shared\lshareddefs.cpp"
+            $File "$SRCDIR\game\shared\lshareddefs.h"
+            $File "$SRCDIR\game\shared\lsrcinit.cpp"
+            $File "$SRCDIR\public\steam\lsteam_api.cpp"
+            $File "$SRCDIR\game\shared\ltakedamageinfo.cpp"
+            $File "$SRCDIR\game\shared\luacachefile.cpp"
+            $File "$SRCDIR\game\shared\luacachefile.h"
+            $File "$SRCDIR\game\shared\luamanager.cpp"
+            $File "$SRCDIR\game\shared\luamanager.h"
+            $File "lutil.cpp"
+            $File "lutil.h"
+            $File "$SRCDIR\game\shared\lutil_shared.cpp"
+            $File "$SRCDIR\public\mathlib\lvector.cpp"
+            $File "$SRCDIR\public\mathlib\lvmatrix.cpp"
+            $File "$SRCDIR\public\mathlib\lvmatrix.h"
+            $File "$SRCDIR\public\lvphysics_interface.cpp"
+            $File "$SRCDIR\public\XUnzip.cpp"
+            $File "$SRCDIR\public\zip_utils.cpp"
+			// New Entries
+            $File "$SRCDIR\game\shared\luasrclib.h"
+            $File "$SRCDIR\game\shared\hl2mp\lhl2mp_player_shared.cpp"
+            $File "$SRCDIR\game\server\hl2\lhl2_player.cpp"
+            $File "$SRCDIR\game\shared\hl2mp\weapon_hl2mpbase_scriptedweapon.cpp"
+			$File "$SRCDIR\game\shared\lsrcinit.h"
+        }
+	}
+}
