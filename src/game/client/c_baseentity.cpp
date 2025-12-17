@@ -1660,6 +1660,7 @@ int C_BaseEntity::GetSoundSourceIndex() const
 //-----------------------------------------------------------------------------
 const Vector& C_BaseEntity::GetRenderOrigin( void )
 {
+	/*
 #ifdef LUA_SDK
 	if (m_nTableReference != LUA_NOREF)
 	{
@@ -1675,12 +1676,14 @@ const Vector& C_BaseEntity::GetRenderOrigin( void )
 		lua_pop(L, 1);
 	}
 #endif
+	*/
 	return GetAbsOrigin();
 }
 
 const QAngle& C_BaseEntity::GetRenderAngles( void )
 {
 	//This and the above are broken for some reason. wtf is it doing.
+		/*
 #ifdef LUA_SDK
 	if (m_nTableReference != LUA_NOREF)
 	{
@@ -1696,6 +1699,7 @@ const QAngle& C_BaseEntity::GetRenderAngles( void )
 		lua_pop(L, 1);
 	}
 #endif
+	*/
 	return GetAbsAngles();
 }
 
