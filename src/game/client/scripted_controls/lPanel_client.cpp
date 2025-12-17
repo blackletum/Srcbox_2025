@@ -11,7 +11,7 @@
 #include <luamanager.h>
 #include <vgui_controls/lPanel.h>
 
-#include <scripted_controls/lPanel.h>
+#include <scripted_controls/lPanel_client.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>

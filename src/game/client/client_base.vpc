@@ -585,7 +585,7 @@ $Project
             $File "$SRCDIR\game\client\scripted_controls\lbutton.cpp"
             $File "$SRCDIR\game\client\scripted_controls\lcheckbutton.cpp"
             $File "$SRCDIR\game\client\scripted_controls\lframe.cpp"
-            $File "$SRCDIR\game\client\scripted_controls\lpanel.cpp"
+            $File "$SRCDIR\game\client\scripted_controls\lPanel_client.cpp"
             $File "$SRCDIR\game\client\scripted_controls\lpropertydialog.cpp"
             $File "$SRCDIR\game\client\scripted_controls\lPropertyPage.cpp"
             $File "$SRCDIR\game\client\scripted_controls\scriptedclientluapanel.cpp"
