@@ -435,6 +435,7 @@ void CHL2MPRules::NPC_DroppedGrenade(void)
 
 #endif
 
+#ifdef LUA_SDK
 void CHL2MPRules::PlayerThink(CBasePlayer* pPlayer)
 {
 	BEGIN_LUA_CALL_HOOK("PlayerThink");
@@ -477,7 +478,7 @@ float CHL2MPRules::FlPlayerSpawnTime(CBasePlayer* pPlayer)
 	return BaseClass::FlPlayerSpawnTime(pPlayer);
 }
 #endif
-//#endif
+#endif
 
 void CHL2MPRules::Think( void )
 {
@@ -1385,6 +1386,25 @@ bool CHL2MPRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 	return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 );
 
 }
+
+#if !defined( CLIENT_DLL ) && defined( SRCBOX )
+//-----------------------------------------------------------------------------
+// Returns whether or not Alyx cares about light levels in order to see.
+//-----------------------------------------------------------------------------
+bool CHL2MPRules::IsAlyxInDarknessMode()
+{
+#ifdef HL2_EPISODIC
+	if (alyx_darkness_force.GetBool())
+		return true;
+
+	return (GlobalEntity_GetState("ep_alyx_darknessmode") == GLOBAL_ON);
+#else
+	return false;
+#endif // HL2_EPISODIC
+}
+
+
+#endif
 
 bool CHL2MPRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 {
