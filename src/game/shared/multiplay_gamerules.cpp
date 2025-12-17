@@ -368,7 +368,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 #endif
 	}
 #endif
-#ifdef LUA_SDK
+//#ifdef LUA_SDK
 	//=========================================================
 	//=========================================================
 	void CMultiplayRules::Think(void)
@@ -411,8 +411,9 @@ ConVarRef suitcharger( "sk_suitcharger" );
 		}
 #endif
 	}
-#else
-#ifndef CLIENT_DLL
+
+//#elif defined GAME_DLL && defined LUA_SDK
+/*
 	//=========================================================
 	//=========================================================
 	void CMultiplayRules::Think(void)
@@ -451,7 +452,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 			}
 		}
 	}
-#endif
+*/
 	//=========================================================
 	//=========================================================
 	void CMultiplayRules::FrameUpdatePostEntityThink()
@@ -1589,7 +1590,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	}
 
 
-#endif		
+//#endif		
 
 
 	//-----------------------------------------------------------------------------

@@ -112,8 +112,11 @@ public:
 #ifndef CLIENT_DLL
 #endif
 #ifdef LUA_SDK
+#ifdef GAME_DLL
+	virtual void FrameUpdatePostEntityThink();
 	// GR_Think
 	virtual void Think(void);
+#endif
 #else
 #ifndef CLIENT_DLL
 	virtual void FrameUpdatePostEntityThink();
