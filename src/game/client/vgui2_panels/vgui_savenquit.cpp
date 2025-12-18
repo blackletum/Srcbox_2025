@@ -262,7 +262,7 @@ void CSaveBeforeQuitQueryDialog::OnCommand(const char* pcCommand)
 
 	if (FStrEq(pcCommand, "OK"))
 	{
-		engine->ClientCmd("quit");
+		engine->ClientCmd_Unrestricted("quit");
 	}
 }
 
@@ -276,14 +276,14 @@ void CQuitQueryBoxDialog::OnCommand(const char* pcCommand)
 {
 	if (FStrEq(pcCommand, "OnCancel"))
 	{
-		engine->ClientCmd("quit");
+		engine->ClientCmd_Unrestricted("quit");
 		Close();
 	}
 
 	if (FStrEq(pcCommand, "OK"))
 	{
 		SetVisible(false);
-		engine->ClientCmd("quit");
+		engine->ClientCmd_Unrestricted("quit");
 	}
 }
 
