@@ -1,0 +1,58 @@
+#!/bin/bash
+set -euo pipefail
+
+script=$(readlink -f -- "$0")
+pushd "$(dirname -- "$script")" > /dev/null
+
+source sdk_container
+run_in_sniper "$@"
+
+# 1. Argument parsing makes this script useful for local dev, not just CI
+if [ $# -eq 0 ]; then
+    export VPC_NINJA_BUILD_MODE="release"     
+else
+    if [[ "$1" == "debug" ]]; then
+        export VPC_NINJA_BUILD_MODE="debug"
+    elif [[ "$1" == "release" ]]; then
+        export VPC_NINJA_BUILD_MODE="release"
+    else
+        echo "Usage: $0 [debug|release]"
+        exit 1
+    fi
+fi
+
+solution_out="_vpc_/ninja/HL2MP_$VPC_NINJA_BUILD_MODE"
+
+# 2. Skip VPC generation if the file exists (saves time in local dev)
+if [[ ! -f "${solution_out}.ninja" ]]; then
+    echo "Generating VPC projects..."
+    devtools/bin/vpc \
+        /hl2mp \
+        /linux64 \
+        /ninja \
+        /define:SOURCESDK \
+        +game \
+        /mksln "$solution_out" || { echo "ERROR: VPC command failed."; exit 1; }
+
+    # Guard check
+    if [[ ! -f "${solution_out}.ninja" ]]; then
+        echo "ERROR: VPC completed, but ${solution_out}.ninja was not found. Generation failed."
+        exit 1
+    fi
+fi
+
+# 3. Use -v in ninja to print actual compiler commands (crucial for debugging CI failures)
+echo "Starting Ninja build..."
+ninja -v -f "${solution_out}.ninja" -j$(nproc)
+
+# 4. Strip symbols on release builds to prevent massive Git repo bloat
+if [[ "$VPC_NINJA_BUILD_MODE" == "release" ]]; then
+    echo "Stripping release binaries to reduce size..."
+    
+    # Adjusted paths for mod_hl2mp instead of fc_tfsdk
+    # Added || true so the script doesn't fail if a specific library didn't compile/exist
+    strip -s ../game/mod_hl2mp/bin/linux64/client.so || true
+    strip -s ../game/mod_hl2mp/bin/linux64/server.so || true
+fi
+
+popd > /dev/null

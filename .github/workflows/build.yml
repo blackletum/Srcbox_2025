@@ -1,0 +1,109 @@
+name: Build and Push Binaries
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Prevent infinite loops from the bot committing back to the repo
+    if: github.actor != 'github-actions[bot]'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: win64-binaries
+            bin_path: game/mod_hl2mp/bin/x64
+          - os: ubuntu-latest
+            artifact_name: linux64-binaries
+            bin_path: game/mod_hl2mp/bin/linux64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # --- Windows Setup & Build ---
+      - name: Setup MSBuild (Windows)
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Generate Projects (Windows)
+        if: runner.os == 'Windows'
+        working-directory: src
+        shell: cmd
+        # Calling vpc.exe directly to avoid the 'pause' command in create_hl2mp.bat
+        run: devtools\bin\vpc.exe /hl2mp /define:SOURCESDK +game /mksln HL2MP.sln
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        working-directory: src
+        shell: cmd
+        run: msbuild HL2MP.sln /m /p:Configuration=Release /p:Platform=x64
+
+      # --- Linux Setup & Build ---
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build g++-multilib python3 binutils
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        working-directory: src
+        run: |
+          chmod +x create_hl2mp
+          ./create_hl2mp release
+
+      # --- Upload Artifacts ---
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.bin_path }}
+          retention-days: 1
+
+  commit_binaries:
+    name: Commit Binaries to Repo
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Download Windows Binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: win64-binaries
+          path: game/mod_hl2mp/bin/x64
+
+      - name: Download Linux Binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: linux64-binaries
+          path: game/mod_hl2mp/bin/linux64
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage both bin folders
+          git add game/mod_hl2mp/bin/x64
+          git add game/mod_hl2mp/bin/linux64
+          
+          # Only commit if there are actual changes
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto-update compiled binaries [skip ci]"
+            git push
+          else
+            echo "No binary changes detected."
+          fi
